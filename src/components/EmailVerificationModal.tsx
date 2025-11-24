@@ -14,6 +14,14 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({ isOpen,
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  const isTestingMode = import.meta.env.VITE_DISABLE_AUTH_FOR_TESTING === 'true';
+
+  useEffect(() => {
+    if (isOpen && isTestingMode) {
+      window.location.href = '/submit-review';
+    }
+  }, [isOpen, isTestingMode]);
+
   // TEMPORARY: Domain blocklist disabled for testing purposes
   // TODO: Re-enable work email validation for production
   // const blockedDomains = [
@@ -97,7 +105,7 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({ isOpen,
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || isTestingMode) return null;
 
   return (
     <div 

@@ -12,6 +12,11 @@ const Header = () => {
 
   return (
     <>
+      {import.meta.env.VITE_DISABLE_AUTH_FOR_TESTING === 'true' && (
+        <div className="bg-yellow-400 text-gray-900 py-2 px-4 text-center text-sm font-medium">
+          ⚠️ Testing Mode Active - Email Verification Disabled
+        </div>
+      )}
       <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">

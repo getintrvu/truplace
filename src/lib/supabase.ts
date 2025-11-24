@@ -95,6 +95,18 @@ export const signOut = async () => {
 };
 
 export const getCurrentUser = async () => {
+  if (import.meta.env.VITE_DISABLE_AUTH_FOR_TESTING === 'true') {
+    console.warn('⚠️ TESTING MODE: Email verification is bypassed');
+    return {
+      id: 'test-user-123',
+      email: 'test@example.com',
+      app_metadata: {},
+      user_metadata: {},
+      aud: 'authenticated',
+      created_at: new Date().toISOString(),
+    };
+  }
+
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error) throw error;
   return user;
