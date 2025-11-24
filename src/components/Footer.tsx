@@ -12,7 +12,7 @@ const Footer = () => {
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-green-500 rounded-lg flex items-center justify-center">
                 <Search className="w-4 h-4 text-white" />
               </div>
-              <h3 className="text-xl font-bold">RateMyWorkplace</h3>
+              <h3 className="text-xl font-bold">Truplace</h3>
             </div>
             <p className="text-gray-300 mb-6 leading-relaxed">
               The most trusted platform for anonymous workplace reviews. 
@@ -109,7 +109,7 @@ const Footer = () => {
         <div className="border-t border-gray-800 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm">
-              © 2025 RateMyWorkplace. All rights reserved.
+              © 2025 Truplace. All rights reserved.
             </p>
             <div className="flex items-center space-x-6 mt-4 md:mt-0">
               <span className="text-gray-400 text-sm">Trusted by professionals worldwide</span>

@@ -1,14 +1,14 @@
-# RateMyWorkplace - Product Description
+# Truplace - Product Description
 
 ## Overview
 
-RateMyWorkplace is a comprehensive workplace review platform that empowers professionals to share anonymous, authentic reviews about their employers. The platform creates transparency in the job market by allowing current and former employees to rate companies across multiple dimensions, helping job seekers make informed career decisions.
+Truplace is a comprehensive workplace review platform that empowers professionals to share anonymous, authentic reviews about their employers. The platform creates transparency in the job market by allowing current and former employees to rate companies across multiple dimensions, helping job seekers make informed career decisions.
 
 ## Core Value Proposition
 
 **"Anonymous Reviews. Real Insights."**
 
-RateMyWorkplace bridges the information gap between job seekers and employers by providing:
+Truplace bridges the information gap between job seekers and employers by providing:
 - **100% Anonymous Reviews**: Employees can share honest feedback without fear of retaliation
 - **Verified Authenticity**: Email verification ensures reviews come from real people
 - **Multi-Dimensional Insights**: Companies are rated across 8 key workplace dimensions
@@ -305,4 +305,4 @@ Each company profile includes:
 
 ## Conclusion
 
-RateMyWorkplace fills a critical need in the modern job market by providing authentic, anonymous workplace insights. The platform's multi-dimensional rating system, combined with strong privacy protections and a beautiful user experience, positions it as a valuable resource for both job seekers and employers. With its scalable architecture and community-driven content model, RateMyWorkplace is poised to become the go-to platform for workplace transparency.
+Truplace fills a critical need in the modern job market by providing authentic, anonymous workplace insights. The platform's multi-dimensional rating system, combined with strong privacy protections and a beautiful user experience, positions it as a valuable resource for both job seekers and employers. With its scalable architecture and community-driven content model, Truplace is poised to become the go-to platform for workplace transparency.
