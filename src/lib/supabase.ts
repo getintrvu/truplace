@@ -98,7 +98,7 @@ export const getCurrentUser = async () => {
   if (import.meta.env.VITE_DISABLE_AUTH_FOR_TESTING === 'true') {
     console.warn('⚠️ TESTING MODE: Email verification is bypassed');
     return {
-      id: 'test-user-123',
+      id: '00000000-0000-0000-0000-000000000001',
       email: 'test@example.com',
       app_metadata: {},
       user_metadata: {},
