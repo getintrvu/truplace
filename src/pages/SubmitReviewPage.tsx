@@ -13,6 +13,7 @@ interface Company {
   id: string;
   name: string;
   industry: string;
+  size: string;
 }
 
 interface RatingDimension {
@@ -177,7 +178,12 @@ const SubmitReviewPage = () => {
   };
 
   const handleCompanySelect = (company: Company) => {
-    setFormData(prev => ({ ...prev, company }));
+    setFormData(prev => ({
+      ...prev,
+      company,
+      industry: company.industry,
+      companySize: company.size
+    }));
   };
 
   const handleRatingChange = (dimensionId: string, rating: number) => {

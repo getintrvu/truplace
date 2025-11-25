@@ -147,21 +147,21 @@ export const searchCompanies = async (query: string) => {
     // Return popular companies if no query
     const { data, error } = await supabase
       .from('companies')
-      .select('id, name, industry')
+      .select('id, name, industry, size')
       .order('name')
       .limit(10);
-    
+
     if (error) throw error;
     return data;
   }
 
   const { data, error } = await supabase
     .from('companies')
-    .select('id, name, industry')
+    .select('id, name, industry, size')
     .ilike('name', `%${query}%`)
     .order('name')
     .limit(10);
-  
+
   if (error) throw error;
   return data;
 };

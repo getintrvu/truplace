@@ -7,6 +7,7 @@ interface Company {
   id: string;
   name: string;
   industry: string;
+  size: string;
 }
 
 interface CompanySearchProps {
@@ -61,11 +62,11 @@ const CompanySearch: React.FC<CompanySearchProps> = ({
           console.error('Error loading companies:', error);
           // Fallback data
           setFilteredCompanies([
-            { id: '1', name: 'Google', industry: 'Technology' },
-            { id: '2', name: 'Apple', industry: 'Technology' },
-            { id: '3', name: 'Microsoft', industry: 'Technology' },
-            { id: '4', name: 'Amazon', industry: 'E-commerce' },
-            { id: '5', name: 'Meta', industry: 'Technology' }
+            { id: '1', name: 'Google', industry: 'Technology', size: '10000+' },
+            { id: '2', name: 'Apple', industry: 'Technology', size: '10000+' },
+            { id: '3', name: 'Microsoft', industry: 'Technology', size: '10000+' },
+            { id: '4', name: 'Amazon', industry: 'E-commerce', size: '10000+' },
+            { id: '5', name: 'Meta', industry: 'Technology', size: '10000+' }
           ]);
         } finally {
           setLoading(false);
