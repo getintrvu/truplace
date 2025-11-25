@@ -103,11 +103,6 @@ const Header = () => {
             <a href="/companies" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">
               Companies
             </a>
-            {user && (
-              <a href="/request-company" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">
-                Request Company
-              </a>
-            )}
             <a href="/about" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">
               About
             </a>
@@ -177,11 +172,6 @@ const Header = () => {
               <a href="/companies" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">
                 Companies
               </a>
-              {user && (
-                <a href="/request-company" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">
-                  Request Company
-                </a>
-              )}
               <a href="/about" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">
                 About
               </a>
