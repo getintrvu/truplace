@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  Building2, 
-  Star, 
-  Users, 
-  TrendingUp, 
+import {
+  Building2,
+  Star,
+  Users,
+  TrendingUp,
   Calendar,
   Edit,
   ArrowLeft,
