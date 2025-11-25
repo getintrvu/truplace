@@ -22,13 +22,11 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({ isOpen,
     }
   }, [isOpen, isTestingMode]);
 
-  // TEMPORARY: Domain blocklist disabled for testing purposes
-  // TODO: Re-enable work email validation for production
-  // const blockedDomains = [
-  //   'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'aol.com',
-  //   'icloud.com', 'live.com', 'msn.com', 'ymail.com', 'protonmail.com',
-  //   'mail.com', 'zoho.com', 'gmx.com'
-  // ];
+  const blockedDomains = [
+    'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'aol.com',
+    'icloud.com', 'live.com', 'msn.com', 'ymail.com', 'protonmail.com',
+    'mail.com', 'zoho.com', 'gmx.com'
+  ];
 
   // Email validation regex
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -59,14 +57,12 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({ isOpen,
       return;
     }
 
-    // TEMPORARY: Domain blocking disabled for testing purposes
-    // TODO: Re-enable work email validation for production
-    // const domain = email.split('@')[1]?.toLowerCase();
-    // if (domain && blockedDomains.includes(domain)) {
-    //   setIsValid(false);
-    //   setErrorMessage('Please use your work email address. Personal email providers are not allowed.');
-    //   return;
-    // }
+    const domain = email.split('@')[1]?.toLowerCase();
+    if (domain && blockedDomains.includes(domain)) {
+      setIsValid(false);
+      setErrorMessage('Please use your work email address. Personal email providers are not allowed.');
+      return;
+    }
 
     // Email is valid
     setIsValid(true);
