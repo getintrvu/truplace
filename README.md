@@ -45,21 +45,28 @@ npm install
 ```
 
 3. Set up environment variables:
-Create a `.env` file in the root directory with:
+Copy the example file and configure:
+```bash
+cp .env.example .env
+```
+Edit `.env` and add your Supabase credentials:
 ```
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-4. Run database migrations:
+4. Set up email service (optional but recommended):
+See **[EMAIL_SETUP_GUIDE.md](./EMAIL_SETUP_GUIDE.md)** for detailed instructions on configuring Brevo email notifications.
+
+5. Run database migrations:
 The database schema includes tables for companies, reviews, company requests, and notifications. Migrations are located in `supabase/migrations/`.
 
-5. Start the development server:
+6. Start the development server:
 ```bash
 npm run dev
 ```
 
-6. Build for production:
+7. Build for production:
 ```bash
 npm run build
 ```
@@ -129,6 +136,30 @@ truplace/
 6. Working Environment
 7. Work-Life Balance
 8. Cooperation & Relationships
+9. Business Health & Outlook
+
+## Email Notifications Setup
+
+TruPlace uses Brevo (formerly Sendinblue) to send email notifications for company request approvals and rejections.
+
+### Quick Setup
+
+1. Create a Brevo account at [https://www.brevo.com](https://www.brevo.com)
+2. Get your API key from the Brevo dashboard
+3. Configure environment variables in `.env`:
+   ```
+   BREVO_API_KEY=your_api_key_here
+   BREVO_SENDER_EMAIL=notifications@yourdomain.com
+   BREVO_SENDER_NAME=TruPlace Team
+   ```
+4. Set Supabase Edge Function secrets (see below)
+
+### Detailed Guides
+
+- **[EMAIL_SETUP_GUIDE.md](./EMAIL_SETUP_GUIDE.md)** - Complete email service setup walkthrough
+- **[SUPABASE_SECRETS_SETUP.md](./SUPABASE_SECRETS_SETUP.md)** - Quick guide for setting Supabase secrets
+
+The `send-email` Edge Function is already deployed and ready to use once you configure the credentials.
 
 ## Contributing
 
