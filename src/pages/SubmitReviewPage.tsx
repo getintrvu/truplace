@@ -145,14 +145,15 @@ const SubmitReviewPage = () => {
   // Calculate progress
   const calculateProgress = () => {
     let completed = 0;
-    const total = 12; // company + 9 ratings + recommendation + advice
+    const total = 13; // company + role + 9 ratings + recommendation + advice
 
     if (formData.company) completed++;
-    
+    if (formData.role.trim()) completed++;
+
     formData.ratings.forEach(rating => {
       if (rating.rating > 0) completed++;
     });
-    
+
     if (formData.overallRecommendation) completed++;
     if (formData.friendAdvice.trim()) completed++;
 
@@ -214,6 +215,12 @@ const SubmitReviewPage = () => {
         return;
       }
 
+      if (!formData.role.trim()) {
+        toast?.error('Please enter your role or department');
+        setIsSubmitting(false);
+        return;
+      }
+
       if (!formData.overallRecommendation) {
         toast?.error('Please provide your overall recommendation');
         setIsSubmitting(false);
@@ -227,7 +234,7 @@ const SubmitReviewPage = () => {
           formData.ratings.reduce((sum, r) => sum + r.rating, 0) / formData.ratings.length
         ),
         recommendation: formData.overallRecommendation,
-        role: formData.role || undefined,
+        role: formData.role.trim(),
         pros: formData.ratings
           .filter(r => r.feedback.trim() && r.rating >= 4)
           .map(r => r.feedback.trim())
@@ -268,6 +275,7 @@ const SubmitReviewPage = () => {
   const isFormValid = () => {
     return (
       formData.company &&
+      formData.role.trim().length > 0 &&
       formData.ratings.every(r => r.rating > 0) &&
       formData.overallRecommendation
     );
@@ -499,7 +507,7 @@ const SubmitReviewPage = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Your Role/Department (Optional)
+                Your Role/Department <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -507,6 +515,7 @@ const SubmitReviewPage = () => {
                 onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
                 placeholder="e.g. Software Engineer, Marketing Manager"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                required
               />
             </div>
           </div>
