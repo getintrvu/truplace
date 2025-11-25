@@ -100,9 +100,6 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="/reviews" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">
-              Reviews
-            </a>
             <a href="/companies" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">
               Companies
             </a>
@@ -177,9 +174,6 @@ const Header = () => {
               </div>
             )}
             <nav className="flex flex-col space-y-4">
-              <a href="/reviews" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">
-                Reviews
-              </a>
               <a href="/companies" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">
                 Companies
               </a>

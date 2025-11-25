@@ -5,7 +5,6 @@ import Footer from './components/Footer';
 import ToastContainer from './components/ToastContainer';
 import { useToast } from './hooks/useToast';
 import LandingPage from './pages/LandingPage';
-import ReviewsPage from './pages/ReviewsPage';
 import CompaniesPage from './pages/CompaniesPage';
 import AboutPage from './pages/AboutPage';
 import SubmitReviewPage from './pages/SubmitReviewPage';
@@ -34,7 +33,6 @@ function App() {
               <Route path="/admin/company-requests" element={<AdminCompanyRequestsPage />} />
               <Route path="/notification/:token" element={<NotificationPage />} />
               <Route path="/company/:companyId" element={<CompanyProfilePage />} />
-              <Route path="/reviews" element={<ReviewsPage />} />
               <Route path="/companies" element={<CompaniesPage />} />
               <Route path="/about" element={<AboutPage />} />
             </Routes>
