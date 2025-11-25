@@ -11,7 +11,7 @@ Truplace is a comprehensive workplace review platform that empowers professional
 Truplace bridges the information gap between job seekers and employers by providing:
 - **100% Anonymous Reviews**: Employees can share honest feedback without fear of retaliation
 - **Verified Authenticity**: Email verification ensures reviews come from real people
-- **Multi-Dimensional Insights**: Companies are rated across 8 key workplace dimensions
+- **Multi-Dimensional Insights**: Companies are rated across 9 key workplace dimensions
 - **Community-Driven**: Thousands of company reviews help create a transparent job market
 
 ## Target Audience
@@ -42,7 +42,7 @@ Truplace bridges the information gap between job seekers and employers by provid
 - Popular companies showcase for quick discovery
 
 ### 3. Multi-Dimensional Rating System
-Reviews evaluate companies across 8 critical dimensions:
+Reviews evaluate companies across 9 critical dimensions:
 - **Compensation & Benefits**: Salary, bonuses, health insurance, and perks
 - **Management Quality**: Leadership effectiveness and managerial support
 - **Culture, Values & Inclusion**: Company values, diversity, and inclusive environment
@@ -51,13 +51,14 @@ Reviews evaluate companies across 8 critical dimensions:
 - **Working Environment**: Office space, tools, and remote/physical work setup
 - **Work-Life Balance**: Flexible hours, vacation policy, and stress levels
 - **Cooperation & Relationships**: Teamwork and colleague relationships
+- **Business Health & Outlook**: Company stability, financial health, and future prospects
 
 ### 4. Detailed Company Profiles
 Each company profile includes:
 - Overall rating (1-5 stars)
 - Total review count
 - Recommendation rate (% who would recommend)
-- Average ratings for all 8 dimensions
+- Average ratings for all 9 dimensions
 - Visual charts and statistics
 - Recent reviews with detailed feedback
 - Company size and industry information
@@ -131,7 +132,7 @@ Each company profile includes:
 - Optional role/position
 - Pros and cons arrays
 - Additional advice text
-- JSONB dimensions object for 8 ratings
+- JSONB dimensions object for 9 ratings
 - Helpful count for community engagement
 - Creation timestamp
 
@@ -255,7 +256,7 @@ Each company profile includes:
 
 ## Competitive Advantages
 
-1. **Comprehensive Rating System**: 8-dimensional ratings vs. single overall score
+1. **Comprehensive Rating System**: 9-dimensional ratings vs. single overall score
 2. **True Anonymity**: No username displays, complete privacy
 3. **Verified Authenticity**: Email verification without restricting access
 4. **User-Driven Database**: Community can request companies
@@ -303,6 +304,30 @@ Each company profile includes:
 - Clear privacy policies
 - Secure authentication messaging
 
+## Testing & Development
+
+### Testing Mode
+For local development and testing, email verification can be bypassed:
+
+**Enable Testing Mode:**
+```
+VITE_DISABLE_AUTH_FOR_TESTING=true
+```
+
+**Features:**
+- Bypasses email verification completely
+- Auto-creates test user (ID: `test-user-123`)
+- Direct access to review submission
+- Yellow banner indicating testing mode
+- Console warnings when active
+
+**Cleanup:**
+```sql
+DELETE FROM reviews WHERE user_id = 'test-user-123';
+```
+
+This feature streamlines development and QA testing without compromising production security.
+
 ## Conclusion
 
-Truplace fills a critical need in the modern job market by providing authentic, anonymous workplace insights. The platform's multi-dimensional rating system, combined with strong privacy protections and a beautiful user experience, positions it as a valuable resource for both job seekers and employers. With its scalable architecture and community-driven content model, Truplace is poised to become the go-to platform for workplace transparency.
+Truplace fills a critical need in the modern job market by providing authentic, anonymous workplace insights. The platform's comprehensive 9-dimensional rating system, combined with strong privacy protections and a beautiful user experience, positions it as a valuable resource for both job seekers and employers. With its scalable architecture and community-driven content model, Truplace is poised to become the go-to platform for workplace transparency.
