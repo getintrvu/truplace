@@ -314,6 +314,7 @@ export const hashEmail = async (email: string): Promise<string> => {
 export interface CompanyRequest {
   id: string;
   requester_hash: string;
+  requester_email: string;
   company_name: string;
   company_website: string;
   email_domains: string[];
@@ -362,6 +363,7 @@ export const submitCompanyRequest = async (requestData: {
     .insert({
       ...requestData,
       requester_hash: emailHash,
+      requester_email: user.email,
     })
     .select()
     .maybeSingle();
@@ -432,7 +434,7 @@ export const updateCompanyRequestStatus = async (
 export const approveCompanyRequest = async (requestId: string, adminNotes?: string) => {
   // First update the request status
   const request = await updateCompanyRequestStatus(requestId, 'approved', adminNotes);
-  
+
   // Create the company
   const { data: company, error: companyError } = await supabase
     .from('companies')
@@ -449,7 +451,7 @@ export const approveCompanyRequest = async (requestId: string, adminNotes?: stri
   if (companyError) throw companyError;
 
   // Send notification to requester
-  await createNotification({
+  const notification = await createNotification({
     recipient_hash: request.requester_hash,
     type: 'company_approved',
     title: 'Company Request Approved!',
@@ -461,6 +463,18 @@ export const approveCompanyRequest = async (requestId: string, adminNotes?: stri
     },
   });
 
+  // Send email notification
+  try {
+    const { sendCompanyApprovedEmail } = await import('./emailService');
+    await sendCompanyApprovedEmail(
+      request.requester_email,
+      request.company_name,
+      notification.token
+    );
+  } catch (emailError) {
+    console.error('Failed to send approval email:', emailError);
+  }
+
   return { request, company };
 };
 
@@ -470,9 +484,9 @@ export const rejectCompanyRequest = async (
   adminNotes?: string
 ) => {
   const request = await updateCompanyRequestStatus(requestId, 'rejected', adminNotes, rejectionReason);
-  
+
   // Send notification to requester
-  await createNotification({
+  const notification = await createNotification({
     recipient_hash: request.requester_hash,
     type: 'company_rejected',
     title: 'Company Request Update',
@@ -483,6 +497,19 @@ export const rejectCompanyRequest = async (
       request_id: requestId,
     },
   });
+
+  // Send email notification
+  try {
+    const { sendCompanyRejectedEmail } = await import('./emailService');
+    await sendCompanyRejectedEmail(
+      request.requester_email,
+      request.company_name,
+      notification.token,
+      rejectionReason
+    );
+  } catch (emailError) {
+    console.error('Failed to send rejection email:', emailError);
+  }
 
   return request;
 };
