@@ -15,6 +15,7 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({ isOpen,
   const [isSuccess, setIsSuccess] = useState(false);
 
   const isTestingMode = import.meta.env.VITE_DISABLE_AUTH_FOR_TESTING === 'true';
+  const allowPersonalEmails = import.meta.env.VITE_ALLOW_PERSONAL_EMAILS === 'true';
 
   useEffect(() => {
     if (isOpen && isTestingMode) {
@@ -57,11 +58,15 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({ isOpen,
       return;
     }
 
-    const domain = email.split('@')[1]?.toLowerCase();
-    if (domain && blockedDomains.includes(domain)) {
-      setIsValid(false);
-      setErrorMessage('Please use your work email address. Personal email providers are not allowed.');
-      return;
+    // TESTING: Skip work email validation if VITE_ALLOW_PERSONAL_EMAILS is enabled
+    // WARNING: This should be disabled in production!
+    if (!allowPersonalEmails) {
+      const domain = email.split('@')[1]?.toLowerCase();
+      if (domain && blockedDomains.includes(domain)) {
+        setIsValid(false);
+        setErrorMessage('Please use your work email address. Personal email providers are not allowed.');
+        return;
+      }
     }
 
     // Email is valid
