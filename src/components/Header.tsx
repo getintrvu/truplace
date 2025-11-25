@@ -15,17 +15,20 @@ const Header = () => {
   useEffect(() => {
     checkAuthStatus();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        setUser(session.user);
-      } else {
-        setUser(null);
-      }
-    });
+    // Only set up auth listener if not in testing mode
+    if (import.meta.env.VITE_DISABLE_AUTH_FOR_TESTING !== 'true') {
+      const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (session?.user) {
+          setUser(session.user);
+        } else {
+          setUser(null);
+        }
+      });
 
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
+      return () => {
+        authListener.subscription.unsubscribe();
+      };
+    }
   }, []);
 
   const checkAuthStatus = async () => {
@@ -49,6 +52,14 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
+      // In testing mode, just clear the user state
+      if (import.meta.env.VITE_DISABLE_AUTH_FOR_TESTING === 'true') {
+        setUser(null);
+        setIsUserMenuOpen(false);
+        navigate('/');
+        return;
+      }
+
       await supabase.auth.signOut();
       setUser(null);
       setIsUserMenuOpen(false);
