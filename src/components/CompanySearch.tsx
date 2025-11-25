@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Building2, ChevronDown } from 'lucide-react';
+import { Search, Building2, ChevronDown, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { searchCompanies } from '../lib/supabase';
 
 interface Company {
@@ -19,6 +20,7 @@ const CompanySearch: React.FC<CompanySearchProps> = ({
   onCompanySelect,
   placeholder = "Search for your company..."
 }) => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredCompanies, setFilteredCompanies] = useState<Company[]>([]);
@@ -147,6 +149,16 @@ const CompanySearch: React.FC<CompanySearchProps> = ({
               {searchTerm && <p className="text-sm mt-1">Try a different search term</p>}
             </div>
           )}
+
+          <div className="border-t border-gray-200 bg-gray-50">
+            <button
+              onClick={() => navigate('/request-company', { state: { fromReview: true, suggestedName: searchTerm } })}
+              className="w-full px-4 py-3 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none transition-colors duration-200 flex items-center justify-center space-x-2 text-blue-600 font-medium"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Company not listed? Request to add it</span>
+            </button>
+          </div>
         </div>
       )}
     </div>

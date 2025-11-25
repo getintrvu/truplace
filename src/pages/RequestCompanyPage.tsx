@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Building2, Globe, Send, Loader2 } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ArrowLeft, Building2, Globe, Send, Loader2, Edit } from 'lucide-react';
 import { getCurrentUser, submitCompanyRequest, detectDuplicateCompanies } from '../lib/supabase';
 import { CompanyRequestFormData, ValidationErrors, DuplicateCompany } from '../types/companyRequest';
 import FormField from '../components/FormField';
@@ -12,6 +12,8 @@ import ProgressBar from '../components/ProgressBar';
 
 const RequestCompanyPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { fromReview, suggestedName } = location.state || {};
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -21,7 +23,7 @@ const RequestCompanyPage = () => {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<CompanyRequestFormData>({
-    company_name: '',
+    company_name: suggestedName || '',
     company_website: '',
     email_domains: [],
     industry: '',
@@ -361,17 +363,34 @@ const RequestCompanyPage = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate(fromReview ? '/submit-review' : '/')}
             className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors duration-200"
           >
             <ArrowLeft className="w-5 h-5" />
-            <span>Back to Home</span>
+            <span>{fromReview ? 'Back to Review' : 'Back to Home'}</span>
           </button>
         </div>
 
+        {fromReview && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div className="flex items-start space-x-3">
+              <Edit className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-medium text-blue-900 mb-1">
+                  Requesting company to write a review
+                </h3>
+                <p className="text-sm text-blue-700">
+                  Once your company request is approved, you'll receive an email notification with
+                  a link to submit your review. This typically takes 24-48 hours.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Progress Bar */}
-        <ProgressBar 
-          progress={calculateProgress()} 
+        <ProgressBar
+          progress={calculateProgress()}
           title="Request New Company"
           subtitle="Help us expand our database by suggesting your company"
         />
