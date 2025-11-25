@@ -48,6 +48,7 @@ export interface Review {
     environment: number;
     worklife: number;
     cooperation: number;
+    business_health: number;
   };
   helpful_count: number;
   created_at: string;
@@ -71,6 +72,7 @@ export interface CompanyStats {
     environment: number;
     worklife: number;
     cooperation: number;
+    business_health: number;
   };
   created_at: string;
   updated_at: string;
@@ -232,6 +234,7 @@ export const submitReview = async (reviewData: {
     environment: number;
     worklife: number;
     cooperation: number;
+    business_health: number;
   };
 }) => {
   const user = await getCurrentUser();

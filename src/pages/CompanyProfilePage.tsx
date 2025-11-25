@@ -319,7 +319,7 @@ const CompanyProfilePage = () => {
                   reviewCount={Math.round(company.review_count * 0.9)}
                 />
                 <RatingBar
-                  title="Career Opportunities"
+                  title="Career Opportunities & Development"
                   rating={company.dimensions.career}
                   reviewCount={Math.round(company.review_count * 0.6)}
                 />
@@ -342,6 +342,11 @@ const CompanyProfilePage = () => {
                   title="Cooperation & Relationships"
                   rating={company.dimensions.cooperation}
                   reviewCount={Math.round(company.review_count * 0.7)}
+                />
+                <RatingBar
+                  title="Business Health & Outlook"
+                  rating={company.dimensions.business_health}
+                  reviewCount={Math.round(company.review_count * 0.6)}
                 />
               </div>
             </div>

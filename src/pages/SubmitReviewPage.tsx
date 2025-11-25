@@ -51,14 +51,14 @@ const SubmitReviewPage = () => {
       {
         id: 'compensation',
         title: 'Compensation & Benefits',
-        description: 'Salary, bonuses, health insurance, and perks',
+        description: 'Salary, bonuses, health insurance, and perks.',
         rating: 0,
         feedback: ''
       },
       {
         id: 'management',
         title: 'Management Quality',
-        description: 'Leadership effectiveness and support from managers',
+        description: 'Executive Leadership effectiveness and overall business strategy.',
         rating: 0,
         feedback: ''
       },
@@ -72,35 +72,42 @@ const SubmitReviewPage = () => {
       {
         id: 'career',
         title: 'Career Opportunities & Development',
-        description: 'Growth potential and learning opportunities',
+        description: 'Growth potential, learning, and skill development.',
         rating: 0,
         feedback: ''
       },
       {
         id: 'recognition',
         title: 'Recognition & Appreciation',
-        description: 'How well contributions are acknowledged',
+        description: 'How well your work and contributions are acknowledged.',
         rating: 0,
         feedback: ''
       },
       {
         id: 'environment',
         title: 'Working Environment',
-        description: 'Office space, tools, and physical/remote work setup',
+        description: 'Office/remote setup, tools provided, and general workspace quality.',
         rating: 0,
         feedback: ''
       },
       {
         id: 'worklife',
         title: 'Work-Life Balance',
-        description: 'Flexible hours, vacation policy, and stress levels',
+        description: 'Flexible hours, vacation policy, stress levels, and respect for personal time.',
         rating: 0,
         feedback: ''
       },
       {
         id: 'cooperation',
         title: 'Cooperation & Relationships',
-        description: 'Teamwork and colleague relationships',
+        description: 'Quality of teamwork, communication, and colleague relationships.',
+        rating: 0,
+        feedback: ''
+      },
+      {
+        id: 'business_health',
+        title: 'Business Health & Outlook',
+        description: 'Financial stability, long-term viability, and job security.',
         rating: 0,
         feedback: ''
       }
@@ -137,7 +144,7 @@ const SubmitReviewPage = () => {
   // Calculate progress
   const calculateProgress = () => {
     let completed = 0;
-    const total = 11; // company + 8 ratings + recommendation + advice
+    const total = 12; // company + 9 ratings + recommendation + advice
 
     if (formData.company) completed++;
     
@@ -233,6 +240,7 @@ const SubmitReviewPage = () => {
           environment: formData.ratings.find(r => r.id === 'environment')?.rating || 0,
           worklife: formData.ratings.find(r => r.id === 'worklife')?.rating || 0,
           cooperation: formData.ratings.find(r => r.id === 'cooperation')?.rating || 0,
+          business_health: formData.ratings.find(r => r.id === 'business_health')?.rating || 0,
         }
       };
 
