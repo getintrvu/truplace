@@ -1,13 +1,70 @@
-import React, { useState } from 'react';
-import { Menu, X, Search, Edit } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Menu, X, Search, Edit, User, LogOut, ChevronDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { getCurrentUser, supabase } from '../lib/supabase';
 import EmailVerificationModal from './EmailVerificationModal';
 
 const Header = () => {
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    checkAuthStatus();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+    } catch (error) {
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleWriteReviewClick = () => {
-    setIsModalOpen(true);
+    if (user) {
+      navigate('/submit-review');
+    } else {
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setIsUserMenuOpen(false);
+      navigate('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  const getUserEmail = () => {
+    if (!user?.email) return '';
+    const email = user.email;
+    if (email.length > 25) {
+      return email.substring(0, 22) + '...';
+    }
+    return email;
   };
 
   return (
@@ -38,20 +95,55 @@ const Header = () => {
             <a href="/companies" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">
               Companies
             </a>
+            {user && (
+              <a href="/request-company" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">
+                Request Company
+              </a>
+            )}
             <a href="/about" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">
               About
             </a>
           </nav>
 
-          {/* CTA Button */}
-          <div className="hidden md:flex items-center">
-            <button 
+          {/* CTA Button & User Menu */}
+          <div className="hidden md:flex items-center space-x-4">
+            <button
               onClick={handleWriteReviewClick}
               className="bg-gradient-to-r from-blue-600 to-green-500 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center space-x-2"
             >
               <Edit className="w-4 h-4" />
               <span>Write a Review</span>
             </button>
+
+            {user && (
+              <div className="relative">
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                >
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-green-500 rounded-full flex items-center justify-center">
+                    <User className="w-4 h-4 text-white" />
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-gray-600" />
+                </button>
+
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                    <div className="px-4 py-3 border-b border-gray-200">
+                      <p className="text-xs text-gray-500">Signed in as</p>
+                      <p className="text-sm font-medium text-gray-900 truncate">{getUserEmail()}</p>
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2 transition-colors duration-200"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -67,6 +159,12 @@ const Header = () => {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden border-t border-gray-200 py-4">
+            {user && (
+              <div className="px-4 py-3 mb-4 bg-gray-50 rounded-lg">
+                <p className="text-xs text-gray-500">Signed in as</p>
+                <p className="text-sm font-medium text-gray-900 truncate">{getUserEmail()}</p>
+              </div>
+            )}
             <nav className="flex flex-col space-y-4">
               <a href="/reviews" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">
                 Reviews
@@ -74,16 +172,30 @@ const Header = () => {
               <a href="/companies" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">
                 Companies
               </a>
+              {user && (
+                <a href="/request-company" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">
+                  Request Company
+                </a>
+              )}
               <a href="/about" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">
                 About
               </a>
-              <button 
+              <button
                 onClick={handleWriteReviewClick}
                 className="bg-gradient-to-r from-blue-600 to-green-500 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-300 flex items-center justify-center space-x-2 w-full"
               >
                 <Edit className="w-4 h-4" />
                 <span>Write a Review</span>
               </button>
+              {user && (
+                <button
+                  onClick={handleLogout}
+                  className="border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-50 transition-all duration-300 flex items-center justify-center space-x-2 w-full"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout</span>
+                </button>
+              )}
             </nav>
           </div>
         )}
