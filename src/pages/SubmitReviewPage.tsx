@@ -39,6 +39,7 @@ const SubmitReviewPage = () => {
   const toast = useContext(ToastContext);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -227,9 +228,13 @@ const SubmitReviewPage = () => {
         return;
       }
 
+      // Store company ID before it might change
+      const companyId = formData.company.id;
+      const companyName = formData.company.name;
+
       // Prepare review data
       const reviewData = {
-        company_id: formData.company.id,
+        company_id: companyId,
         overall_rating: Math.round(
           formData.ratings.reduce((sum, r) => sum + r.rating, 0) / formData.ratings.length
         ),
@@ -259,16 +264,29 @@ const SubmitReviewPage = () => {
 
       await submitReview(reviewData);
 
+      // Switch to redirecting state
+      setIsSubmitting(false);
+      setIsRedirecting(true);
+
       toast?.success('Review submitted successfully! Thank you for sharing your experience.');
 
-      // Redirect to company profile
+      // Redirect to company profile with error handling
       setTimeout(() => {
-        navigate(`/company/${formData.company!.id}`);
-      }, 1500);
+        try {
+          navigate(`/company/${companyId}`, {
+            state: { reviewSubmitted: true, companyName }
+          });
+        } catch (navError) {
+          console.error('Navigation failed:', navError);
+          toast?.error('Unable to redirect. Please navigate to the company page manually.');
+          setIsRedirecting(false);
+        }
+      }, 1000);
     } catch (error: any) {
       console.error('Submission failed:', error);
       toast?.error(error.message || 'Failed to submit review. Please try again.');
       setIsSubmitting(false);
+      setIsRedirecting(false);
     }
   };
 
@@ -309,6 +327,33 @@ const SubmitReviewPage = () => {
     );
   }
 
+  // Success and redirecting overlay
+  if (isRedirecting) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="max-w-md mx-auto px-4 text-center">
+          <div className="bg-white rounded-lg shadow-lg p-8 border border-gray-200">
+            <div className="mb-6">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Review Submitted!</h2>
+              <p className="text-gray-600">
+                Thank you for sharing your experience. Your review will help others make informed career decisions.
+              </p>
+            </div>
+            <div className="flex items-center justify-center space-x-2 text-blue-600">
+              <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <span className="font-medium">Redirecting to company profile...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (isPreviewMode) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
@@ -330,10 +375,15 @@ const SubmitReviewPage = () => {
               )}
               <button
                 onClick={handleSubmit}
-                disabled={!isFormValid() || isSubmitting}
+                disabled={!isFormValid() || isSubmitting || isRedirecting}
                 className="bg-gradient-to-r from-blue-600 to-green-500 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center space-x-2"
               >
-                {isSubmitting ? (
+                {isRedirecting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Redirecting...</span>
+                  </>
+                ) : isSubmitting ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     <span>Submitting...</span>
@@ -611,7 +661,7 @@ const SubmitReviewPage = () => {
           </p>
           <button
             onClick={() => setIsPreviewMode(true)}
-            disabled={!isFormValid()}
+            disabled={!isFormValid() || isSubmitting || isRedirecting}
             className="bg-gradient-to-r from-blue-600 to-green-500 text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
             Preview & Submit Review

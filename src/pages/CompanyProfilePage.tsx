@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   Building2,
   Star,
@@ -26,17 +26,31 @@ import { CompanyStats, Review } from '../lib/supabase';
 const CompanyProfilePage = () => {
   const { companyId } = useParams<{ companyId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [company, setCompany] = useState<CompanyStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filteredReviews, setFilteredReviews] = useState<Review[]>([]);
+  const [showSubmitBanner, setShowSubmitBanner] = useState(false);
   const [filters, setFilters] = useState({
     rating: '',
     timePeriod: '',
     recommendation: '',
     sortBy: 'recent'
   });
+
+  useEffect(() => {
+    // Check if we just submitted a review
+    const state = location.state as { reviewSubmitted?: boolean; companyName?: string } | null;
+    if (state?.reviewSubmitted) {
+      setShowSubmitBanner(true);
+      // Clear the state to prevent showing banner on refresh
+      window.history.replaceState({}, document.title);
+      // Auto-hide banner after 8 seconds
+      setTimeout(() => setShowSubmitBanner(false), 8000);
+    }
+  }, [location]);
 
   useEffect(() => {
     const fetchCompany = async () => {
@@ -46,10 +60,10 @@ const CompanyProfilePage = () => {
           setError('Company not found');
           return;
         }
-        
+
         const companyData = await getCompanyById(companyId);
         setCompany(companyData);
-        
+
         // Fetch reviews
         const reviews = await getReviewsByCompany(companyId, { limit: 10 });
         setFilteredReviews(reviews);
@@ -201,6 +215,31 @@ const CompanyProfilePage = () => {
             <ArrowLeft className="w-5 h-5" />
             <span>Back to Home</span>
           </button>
+
+          {/* Review Submitted Banner */}
+          {showSubmitBanner && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-green-800 font-semibold mb-1">Review submitted successfully!</h3>
+                <p className="text-green-700 text-sm">
+                  Your review has been published. It may take a few moments for statistics to update.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowSubmitBanner(false)}
+                className="flex-shrink-0 text-green-600 hover:text-green-800"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+          )}
 
           {/* Company Header */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-8">
