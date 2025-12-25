@@ -7,13 +7,14 @@ interface RatingBarProps {
   maxRating?: number;
 }
 
-const RatingBar: React.FC<RatingBarProps> = ({ 
-  title, 
-  rating, 
-  reviewCount, 
-  maxRating = 5 
+const RatingBar: React.FC<RatingBarProps> = ({
+  title,
+  rating,
+  reviewCount,
+  maxRating = 5
 }) => {
-  const percentage = (rating / maxRating) * 100;
+  const validRating = typeof rating === 'number' && !isNaN(rating) ? rating : 0;
+  const percentage = (validRating / maxRating) * 100;
   
   const getBarColor = (rating: number) => {
     if (rating >= 3.5) return 'bg-green-500';
@@ -34,16 +35,16 @@ const RatingBar: React.FC<RatingBarProps> = ({
           <span className="text-sm font-medium text-gray-700">{title}</span>
           <div className="flex items-center space-x-2">
             <span className="text-sm font-semibold text-gray-900">
-              {rating.toFixed(1)}
+              {validRating.toFixed(1)}
             </span>
             <span className="text-xs text-gray-500">
               ({reviewCount})
             </span>
           </div>
         </div>
-        <div className={`w-full h-2 ${getBackgroundColor(rating)} rounded-full overflow-hidden`}>
+        <div className={`w-full h-2 ${getBackgroundColor(validRating)} rounded-full overflow-hidden`}>
           <div
-            className={`h-full ${getBarColor(rating)} rounded-full transition-all duration-500 ease-out`}
+            className={`h-full ${getBarColor(validRating)} rounded-full transition-all duration-500 ease-out`}
             style={{ width: `${percentage}%` }}
           />
         </div>

@@ -344,47 +344,47 @@ const CompanyProfilePage = () => {
               <div className="space-y-1">
                 <RatingBar
                   title="Compensation & Benefits"
-                  rating={company.dimensions.compensation}
+                  rating={company.dimensions?.compensation ?? 0}
                   reviewCount={Math.round(company.review_count * 0.8)}
                 />
                 <RatingBar
                   title="Management Quality"
-                  rating={company.dimensions.management}
+                  rating={company.dimensions?.management ?? 0}
                   reviewCount={Math.round(company.review_count * 0.7)}
                 />
                 <RatingBar
                   title="Culture, Values & Inclusion"
-                  rating={company.dimensions.culture}
+                  rating={company.dimensions?.culture ?? 0}
                   reviewCount={Math.round(company.review_count * 0.9)}
                 />
                 <RatingBar
                   title="Career Opportunities & Development"
-                  rating={company.dimensions.career}
+                  rating={company.dimensions?.career ?? 0}
                   reviewCount={Math.round(company.review_count * 0.6)}
                 />
                 <RatingBar
                   title="Recognition & Appreciation"
-                  rating={company.dimensions.recognition}
+                  rating={company.dimensions?.recognition ?? 0}
                   reviewCount={Math.round(company.review_count * 0.5)}
                 />
                 <RatingBar
                   title="Working Environment"
-                  rating={company.dimensions.environment}
+                  rating={company.dimensions?.environment ?? 0}
                   reviewCount={Math.round(company.review_count * 0.8)}
                 />
                 <RatingBar
                   title="Work-Life Balance"
-                  rating={company.dimensions.worklife}
+                  rating={company.dimensions?.worklife ?? 0}
                   reviewCount={Math.round(company.review_count * 0.9)}
                 />
                 <RatingBar
                   title="Cooperation & Relationships"
-                  rating={company.dimensions.cooperation}
+                  rating={company.dimensions?.cooperation ?? 0}
                   reviewCount={Math.round(company.review_count * 0.7)}
                 />
                 <RatingBar
                   title="Business Health & Outlook"
-                  rating={company.dimensions.business_health}
+                  rating={company.dimensions?.business_health ?? 0}
                   reviewCount={Math.round(company.review_count * 0.6)}
                 />
               </div>
