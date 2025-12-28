@@ -85,16 +85,12 @@ export const sendOTP = async (email: string) => {
     logOTPSendAttempt(email);
 
     try {
-      console.log('🔧 Sending OTP with options:', {
+      console.log('🔧 Sending OTP (clean, no options):', {
         email,
-        shouldCreateUser: true,
       });
 
       const response = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: true,
-        },
+        email
       });
 
       const { data, error } = response;
@@ -121,10 +117,7 @@ export const sendOTP = async (email: string) => {
   }
 
   const { data, error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      shouldCreateUser: true,
-    },
+    email
   });
 
   if (error) throw error;
