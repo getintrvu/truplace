@@ -15,6 +15,21 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 });
 
+// Log client configuration in dev mode
+if (import.meta.env.DEV) {
+  console.log('=== SUPABASE CLIENT CONFIGURATION ===');
+  console.log('URL:', import.meta.env.VITE_SUPABASE_URL);
+  console.log('Anon Key Present:', !!import.meta.env.VITE_SUPABASE_ANON_KEY);
+  console.log('Anon Key (first 20 chars):', import.meta.env.VITE_SUPABASE_ANON_KEY?.substring(0, 20) + '...');
+  console.log('Auth Settings:', {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  });
+  console.log('OTP Type Test Mode:', import.meta.env.VITE_OTP_USE_EMAIL_TYPE !== 'false' ? 'email' : 'magiclink');
+  console.log('=====================================');
+}
+
 // Types for our database
 export interface Company {
   id: string;
@@ -95,11 +110,24 @@ export const sendOTP = async (email: string) => {
 
       const { data, error } = response;
 
-      console.log('📦 Supabase signInWithOtp response:', {
-        data,
-        error,
-        fullResponse: response,
-      });
+      console.log('=== DETAILED SIGNINWITHOTP RESPONSE START ===');
+      console.log('Timestamp:', new Date().toISOString());
+      console.log('Response Object Keys:', Object.keys(response));
+      console.log('Data Object:', JSON.stringify(data, null, 2));
+      console.log('Error Object:', JSON.stringify(error, null, 2));
+      console.log('Full Response (stringified):', JSON.stringify(response, null, 2));
+      if (data) {
+        console.log('Data Keys:', Object.keys(data));
+        console.log('Data.user:', data.user);
+        console.log('Data.session:', data.session);
+      }
+      if (error) {
+        console.log('Error Keys:', Object.keys(error));
+        console.log('Error.message:', error.message);
+        console.log('Error.status:', (error as any).status);
+        console.log('Error.code:', (error as any).code);
+      }
+      console.log('=== DETAILED SIGNINWITHOTP RESPONSE END ===');
 
       if (error) {
         logOTPSendError(email, error);
@@ -130,25 +158,47 @@ export const verifyOTP = async (email: string, token: string) => {
     logOTPVerifyAttempt(email, token.length);
 
     try {
-      console.log('🔧 Verifying OTP with options:', {
-        email,
-        tokenLength: token.length,
-        type: 'email',
-      });
+      // Test flag to switch between 'email' and 'magiclink' types
+      const useEmailType = import.meta.env.VITE_OTP_USE_EMAIL_TYPE !== 'false';
+      const verifyType = useEmailType ? 'email' : 'magiclink';
 
+      console.log('=== VERIFYOTP CALL START ===');
+      console.log('Parameters being sent:');
+      console.log('  email:', email);
+      console.log('  token (masked):', token.substring(0, 2) + '****' + token.substring(4, 6));
+      console.log('  token (full length):', token.length);
+      console.log('  type:', verifyType);
+      console.log('  VITE_OTP_USE_EMAIL_TYPE env var:', import.meta.env.VITE_OTP_USE_EMAIL_TYPE);
+
+      const startTime = Date.now();
       const response = await supabase.auth.verifyOtp({
         email,
         token,
-        type: 'email',
+        type: verifyType as any,
       });
+      const endTime = Date.now();
 
       const { data, error } = response;
 
-      console.log('📦 Supabase verifyOtp response:', {
-        data,
-        error,
-        fullResponse: response,
-      });
+      console.log('Response received in:', endTime - startTime, 'ms');
+      console.log('Response Keys:', Object.keys(response));
+      console.log('Data Object:', JSON.stringify(data, null, 2));
+      console.log('Error Object:', JSON.stringify(error, null, 2));
+      console.log('Full Response (stringified):', JSON.stringify(response, null, 2));
+      if (data) {
+        console.log('Data Keys:', Object.keys(data));
+        console.log('Data.user:', data.user);
+        console.log('Data.session:', data.session);
+      }
+      if (error) {
+        console.log('Error Keys:', Object.keys(error));
+        console.log('Error.message:', error.message);
+        console.log('Error.status:', (error as any).status);
+        console.log('Error.code:', (error as any).code);
+        console.log('Error.details:', (error as any).details);
+        console.log('Error.hint:', (error as any).hint);
+      }
+      console.log('=== VERIFYOTP CALL END ===');
 
       if (error) {
         logOTPVerifyError(email, error);

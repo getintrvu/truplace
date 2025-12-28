@@ -119,6 +119,18 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
       setCodeExpiry(60);
       setCodeSentTime(new Date());
     } catch (error) {
+      // Log raw error for sendOTP
+      console.error('=== RAW SENDOTP ERROR START ===');
+      console.error('Error object:', error);
+      console.error('Error stringified:', JSON.stringify(error, null, 2));
+      if (error && typeof error === 'object') {
+        console.error('Error keys:', Object.keys(error));
+        console.error('Error.message:', (error as any).message);
+        console.error('Error.status:', (error as any).status);
+        console.error('Error.code:', (error as any).code);
+      }
+      console.error('=== RAW SENDOTP ERROR END ===');
+
       setErrorMessage(error instanceof Error ? error.message : 'Failed to send verification code');
     } finally {
       setIsLoading(false);
@@ -152,6 +164,22 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
         window.location.reload();
       }
     } catch (error) {
+      // Log raw error FIRST before any processing
+      console.error('=== RAW VERIFYOTP ERROR START ===');
+      console.error('Error object:', error);
+      console.error('Error stringified:', JSON.stringify(error, null, 2));
+      if (error && typeof error === 'object') {
+        console.error('Error keys:', Object.keys(error));
+        console.error('Error.message:', (error as any).message);
+        console.error('Error.status:', (error as any).status);
+        console.error('Error.code:', (error as any).code);
+        console.error('Error.details:', (error as any).details);
+        console.error('Error.hint:', (error as any).hint);
+        console.error('Error.name:', (error as any).name);
+        console.error('Error.stack:', (error as any).stack);
+      }
+      console.error('=== RAW VERIFYOTP ERROR END ===');
+
       setOtpError(true);
       const errorMsg = error instanceof Error ? error.message.toLowerCase() : '';
 
@@ -187,6 +215,18 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
       setCodeExpiry(60);
       setCodeSentTime(new Date());
     } catch (error) {
+      // Log raw error for resend
+      console.error('=== RAW RESEND OTP ERROR START ===');
+      console.error('Error object:', error);
+      console.error('Error stringified:', JSON.stringify(error, null, 2));
+      if (error && typeof error === 'object') {
+        console.error('Error keys:', Object.keys(error));
+        console.error('Error.message:', (error as any).message);
+        console.error('Error.status:', (error as any).status);
+        console.error('Error.code:', (error as any).code);
+      }
+      console.error('=== RAW RESEND OTP ERROR END ===');
+
       setErrorMessage(error instanceof Error ? error.message : 'Failed to resend code');
     } finally {
       setIsLoading(false);
