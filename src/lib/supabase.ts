@@ -160,15 +160,14 @@ export const verifyOTP = async (email: string, token: string) => {
     try {
       console.log('=== VERIFYOTP CALL START ===');
       console.log('Parameters being sent:');
-      console.log('  email:', email);
-      console.log('  token (masked):', token.substring(0, 2) + '****' + token.substring(4, 6));
-      console.log('  token (full length):', token.length);
+      console.log('  token_hash (masked):', token.substring(0, 2) + '****' + token.substring(4, 6));
+      console.log('  token_hash (full length):', token.length);
       console.log('  type:', 'email');
+      console.log('  NOTE: email parameter NOT included (Supabase identifies user from token)');
 
       const startTime = Date.now();
       const response = await supabase.auth.verifyOtp({
-        email,
-        token,
+        token_hash: token,
         type: 'email',
       });
       const endTime = Date.now();
@@ -219,8 +218,7 @@ export const verifyOTP = async (email: string, token: string) => {
   }
 
   const { data, error } = await supabase.auth.verifyOtp({
-    email,
-    token,
+    token_hash: token,
     type: 'email',
   });
 
