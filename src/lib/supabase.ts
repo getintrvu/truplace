@@ -80,6 +80,33 @@ export interface CompanyStats {
 
 // Authentication helpers
 export const sendOTP = async (email: string) => {
+  if (import.meta.env.DEV) {
+    const { logOTPSendAttempt, logOTPSendSuccess, logOTPSendError } = await import('./otpDebug');
+    logOTPSendAttempt(email);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: true,
+        },
+      });
+
+      if (error) {
+        logOTPSendError(email, error);
+        throw error;
+      }
+
+      logOTPSendSuccess(email);
+      return data;
+    } catch (error) {
+      if (error instanceof Error) {
+        logOTPSendError(email, error);
+      }
+      throw error;
+    }
+  }
+
   const { data, error } = await supabase.auth.signInWithOtp({
     email,
     options: {
@@ -92,6 +119,32 @@ export const sendOTP = async (email: string) => {
 };
 
 export const verifyOTP = async (email: string, token: string) => {
+  if (import.meta.env.DEV) {
+    const { logOTPVerifyAttempt, logOTPVerifySuccess, logOTPVerifyError } = await import('./otpDebug');
+    logOTPVerifyAttempt(email, token.length);
+
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'email',
+      });
+
+      if (error) {
+        logOTPVerifyError(email, error);
+        throw error;
+      }
+
+      logOTPVerifySuccess(email);
+      return data;
+    } catch (error) {
+      if (error instanceof Error) {
+        logOTPVerifyError(email, error);
+      }
+      throw error;
+    }
+  }
+
   const { data, error } = await supabase.auth.verifyOtp({
     email,
     token,

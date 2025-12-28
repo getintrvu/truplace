@@ -4,6 +4,17 @@
 
 Truplace is a comprehensive workplace review platform that empowers professionals to share anonymous, authentic reviews about their employers. The platform creates transparency in the job market by allowing current and former employees to rate companies across multiple dimensions, helping job seekers make informed career decisions.
 
+## Important: OTP Authentication Setup
+
+If users are receiving magic links instead of 6-digit OTP codes, you need to configure the Supabase email template:
+
+1. Go to Supabase Dashboard → Authentication → Email Templates
+2. Edit the "Magic Link" template
+3. Replace `{{ .ConfirmationURL }}` with `{{ .Token }}`
+4. Save and wait 2-3 minutes
+
+For detailed step-by-step instructions with the complete template, see **[SUPABASE_OTP_TEMPLATE_FIX.md](./SUPABASE_OTP_TEMPLATE_FIX.md)**
+
 ## Key Features
 
 - **100% Anonymous Reviews**: Employees can share honest feedback without fear of retaliation
