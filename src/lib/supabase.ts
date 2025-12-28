@@ -26,7 +26,7 @@ if (import.meta.env.DEV) {
     persistSession: true,
     detectSessionInUrl: true
   });
-  console.log('OTP Type Test Mode:', import.meta.env.VITE_OTP_USE_EMAIL_TYPE !== 'false' ? 'email' : 'magiclink');
+  console.log('OTP Type:', 'magiclink');
   console.log('=====================================');
 }
 
@@ -158,23 +158,18 @@ export const verifyOTP = async (email: string, token: string) => {
     logOTPVerifyAttempt(email, token.length);
 
     try {
-      // Test flag to switch between 'email' and 'magiclink' types
-      const useEmailType = import.meta.env.VITE_OTP_USE_EMAIL_TYPE !== 'false';
-      const verifyType = useEmailType ? 'email' : 'magiclink';
-
       console.log('=== VERIFYOTP CALL START ===');
       console.log('Parameters being sent:');
       console.log('  email:', email);
       console.log('  token (masked):', token.substring(0, 2) + '****' + token.substring(4, 6));
       console.log('  token (full length):', token.length);
-      console.log('  type:', verifyType);
-      console.log('  VITE_OTP_USE_EMAIL_TYPE env var:', import.meta.env.VITE_OTP_USE_EMAIL_TYPE);
+      console.log('  type:', 'magiclink');
 
       const startTime = Date.now();
       const response = await supabase.auth.verifyOtp({
         email,
         token,
-        type: verifyType as any,
+        type: 'magiclink',
       });
       const endTime = Date.now();
 
@@ -226,7 +221,7 @@ export const verifyOTP = async (email: string, token: string) => {
   const { data, error } = await supabase.auth.verifyOtp({
     email,
     token,
-    type: 'email',
+    type: 'magiclink',
   });
 
   if (error) throw error;
