@@ -24,6 +24,8 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
   const [otp, setOtp] = useState('');
   const [otpError, setOtpError] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [codeExpiry, setCodeExpiry] = useState(0);
+  const [codeSentTime, setCodeSentTime] = useState<Date | null>(null);
 
   const isTestingMode = import.meta.env.VITE_DISABLE_AUTH_FOR_TESTING === 'true';
   const allowPersonalEmails = import.meta.env.VITE_ALLOW_PERSONAL_EMAILS === 'true';
@@ -53,6 +55,8 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
       setOtp('');
       setOtpError(false);
       setResendCooldown(0);
+      setCodeExpiry(0);
+      setCodeSentTime(null);
     }
   }, [isOpen]);
 
@@ -91,6 +95,15 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
     }
   }, [resendCooldown]);
 
+  useEffect(() => {
+    if (codeExpiry > 0) {
+      const timer = setTimeout(() => {
+        setCodeExpiry(codeExpiry - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [codeExpiry]);
+
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -102,7 +115,9 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
     try {
       await sendOTP(email);
       setCodeSent(true);
-      setResendCooldown(600);
+      setResendCooldown(3600);
+      setCodeExpiry(3600);
+      setCodeSentTime(new Date());
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Failed to send verification code');
     } finally {
@@ -111,14 +126,21 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
   };
 
   const handleVerifyOTP = async () => {
-    if (otp.length !== 6) return;
+    const trimmedOtp = otp.trim();
+
+    if (trimmedOtp.length !== 6) return;
+    if (!/^\d{6}$/.test(trimmedOtp)) {
+      setOtpError(true);
+      setErrorMessage('Code must be 6 digits');
+      return;
+    }
 
     setIsLoading(true);
     setOtpError(false);
     setErrorMessage('');
 
     try {
-      await verifyOTP(email, otp);
+      await verifyOTP(email, trimmedOtp);
 
       if (onVerified) {
         onVerified();
@@ -131,7 +153,15 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
       }
     } catch (error) {
       setOtpError(true);
-      setErrorMessage(error instanceof Error ? error.message : 'Invalid verification code');
+      const errorMsg = error instanceof Error ? error.message.toLowerCase() : '';
+
+      if (errorMsg.includes('expired') || errorMsg.includes('token has expired')) {
+        setErrorMessage('Verification code has expired. Please request a new one.');
+      } else if (errorMsg.includes('invalid') || errorMsg.includes('otp')) {
+        setErrorMessage('Invalid verification code. Please check and try again.');
+      } else {
+        setErrorMessage(error instanceof Error ? error.message : 'Invalid verification code');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -153,7 +183,9 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
 
     try {
       await sendOTP(email);
-      setResendCooldown(600);
+      setResendCooldown(3600);
+      setCodeExpiry(3600);
+      setCodeSentTime(new Date());
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Failed to resend code');
     } finally {
@@ -224,6 +256,20 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
               )
             }
           </p>
+          {codeSent && codeExpiry > 0 && (
+            <div className="mt-3 text-center">
+              <p className="text-sm text-gray-500">
+                Code expires in <span className="font-semibold text-blue-600">{formatTime(codeExpiry)}</span>
+              </p>
+            </div>
+          )}
+          {codeSent && codeExpiry === 0 && (
+            <div className="mt-3 text-center">
+              <p className="text-sm text-red-600 font-medium">
+                Code has expired. Please request a new one.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="px-6 pb-6">
@@ -299,17 +345,24 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
                 )}
               </div>
 
-              <div className="text-center">
-                <button
-                  onClick={handleResendCode}
-                  disabled={isLoading || resendCooldown > 0}
-                  className="text-sm text-blue-600 hover:text-blue-700 transition-colors duration-200 disabled:text-gray-400 disabled:cursor-not-allowed"
-                >
-                  {resendCooldown > 0
-                    ? `Resend available in ${formatTime(resendCooldown)}`
-                    : 'Resend Code'
-                  }
-                </button>
+              <div className="space-y-2">
+                <div className="text-center">
+                  <button
+                    onClick={handleResendCode}
+                    disabled={isLoading || resendCooldown > 0}
+                    className="text-sm text-blue-600 hover:text-blue-700 transition-colors duration-200 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  >
+                    {resendCooldown > 0
+                      ? `Resend available in ${formatTime(resendCooldown)}`
+                      : 'Resend Code'
+                    }
+                  </button>
+                </div>
+                <div className="text-center text-xs text-gray-500">
+                  {codeSentTime && (
+                    <p>Code sent at {codeSentTime.toLocaleTimeString()} • Valid for 1 hour</p>
+                  )}
+                </div>
               </div>
 
               <button

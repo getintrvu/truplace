@@ -55,8 +55,14 @@ export const logOTPSendAttempt = (email: string) => {
 };
 
 export const logOTPSendSuccess = (email: string) => {
+  const sentTime = new Date();
+  const expiryTime = new Date(sentTime.getTime() + 3600000);
+
   console.log('✅ OTP send request successful for:', email);
   console.log('📬 Check your email inbox for the code');
+  console.log('⏰ Code sent at:', sentTime.toLocaleString());
+  console.log('⏰ Code expires at:', expiryTime.toLocaleString());
+  console.log('⏱️  Code valid for: 1 hour (3600 seconds)');
   console.log('⚠️ If you receive a magic link instead of a code, see: SUPABASE_OTP_TEMPLATE_FIX.md');
 };
 
@@ -72,6 +78,8 @@ export const logOTPVerifyAttempt = (email: string, tokenLength: number) => {
   console.log('🔑 Attempting to verify OTP');
   console.log('Email:', email);
   console.log('Token Length:', tokenLength, tokenLength === 6 ? '✅' : '❌ Should be 6');
+  console.log('⏰ Verification attempt at:', new Date().toLocaleString());
+  console.log('⚠️ Note: Codes expire after 1 hour (3600 seconds)');
 };
 
 export const logOTPVerifySuccess = (email: string) => {
@@ -83,11 +91,17 @@ export const logOTPVerifyError = (email: string, error: Error) => {
   console.group('❌ OTP Verification Failed');
   console.error('Email:', email);
   console.error('Error:', error.message);
+  console.error('⏰ Timestamp:', new Date().toLocaleString());
 
-  if (error.message.includes('expired')) {
-    console.error('⏰ Code has expired. Request a new one.');
-  } else if (error.message.includes('invalid')) {
-    console.error('🔢 Invalid code. Check for typos or request a new one.');
+  if (error.message.includes('expired') || error.message.includes('token has expired')) {
+    console.error('⏰ Code has expired (exceeded 1 hour validity)');
+    console.error('💡 Solution: Click "Resend Code" to receive a new verification code');
+  } else if (error.message.includes('invalid') || error.message.includes('otp')) {
+    console.error('🔢 Invalid code entered');
+    console.error('💡 Common issues:');
+    console.error('  - Typo in the code (check all 6 digits)');
+    console.error('  - Code already used');
+    console.error('  - Email/token mismatch');
   }
 
   console.error('Full Error:', error);
