@@ -85,11 +85,24 @@ export const sendOTP = async (email: string) => {
     logOTPSendAttempt(email);
 
     try {
-      const { data, error } = await supabase.auth.signInWithOtp({
+      console.log('🔧 Sending OTP with options:', {
+        email,
+        shouldCreateUser: true,
+      });
+
+      const response = await supabase.auth.signInWithOtp({
         email,
         options: {
           shouldCreateUser: true,
         },
+      });
+
+      const { data, error } = response;
+
+      console.log('📦 Supabase signInWithOtp response:', {
+        data,
+        error,
+        fullResponse: response,
       });
 
       if (error) {
@@ -97,7 +110,7 @@ export const sendOTP = async (email: string) => {
         throw error;
       }
 
-      logOTPSendSuccess(email);
+      logOTPSendSuccess(email, data);
       return data;
     } catch (error) {
       if (error instanceof Error) {
@@ -124,10 +137,24 @@ export const verifyOTP = async (email: string, token: string) => {
     logOTPVerifyAttempt(email, token.length);
 
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
+      console.log('🔧 Verifying OTP with options:', {
+        email,
+        tokenLength: token.length,
+        type: 'email',
+      });
+
+      const response = await supabase.auth.verifyOtp({
         email,
         token,
         type: 'email',
+      });
+
+      const { data, error } = response;
+
+      console.log('📦 Supabase verifyOtp response:', {
+        data,
+        error,
+        fullResponse: response,
       });
 
       if (error) {
@@ -136,6 +163,14 @@ export const verifyOTP = async (email: string, token: string) => {
       }
 
       logOTPVerifySuccess(email);
+
+      // Clean up stored timestamp on success
+      try {
+        sessionStorage.removeItem(`otp_sent_${email}`);
+      } catch (e) {
+        // Ignore cleanup errors
+      }
+
       return data;
     } catch (error) {
       if (error instanceof Error) {

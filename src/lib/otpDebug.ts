@@ -54,16 +54,31 @@ export const logOTPSendAttempt = (email: string) => {
   console.log('⏰ Timestamp:', new Date().toISOString());
 };
 
-export const logOTPSendSuccess = (email: string) => {
+export const logOTPSendSuccess = (email: string, responseData?: any) => {
   const sentTime = new Date();
   const expiryTime = new Date(sentTime.getTime() + 3600000);
 
-  console.log('✅ OTP send request successful for:', email);
+  console.group('✅ OTP Send Success');
+  console.log('Email:', email);
   console.log('📬 Check your email inbox for the code');
   console.log('⏰ Code sent at:', sentTime.toLocaleString());
-  console.log('⏰ Code expires at:', expiryTime.toLocaleString());
-  console.log('⏱️  Code valid for: 1 hour (3600 seconds)');
+  console.log('⏰ Expected expiry at:', expiryTime.toLocaleString());
+  console.log('⏱️  Expected validity: 1 hour (3600 seconds)');
+
+  if (responseData) {
+    console.log('📋 Supabase Response:', responseData);
+  }
+
+  // Store send time for later verification
+  try {
+    sessionStorage.setItem(`otp_sent_${email}`, sentTime.toISOString());
+    console.log('💾 Stored send timestamp for verification tracking');
+  } catch (e) {
+    console.warn('⚠️ Could not store timestamp:', e);
+  }
+
   console.log('⚠️ If you receive a magic link instead of a code, see: SUPABASE_OTP_TEMPLATE_FIX.md');
+  console.groupEnd();
 };
 
 export const logOTPSendError = (email: string, error: Error) => {
@@ -75,11 +90,40 @@ export const logOTPSendError = (email: string, error: Error) => {
 };
 
 export const logOTPVerifyAttempt = (email: string, tokenLength: number) => {
-  console.log('🔑 Attempting to verify OTP');
+  const verifyTime = new Date();
+
+  console.group('🔑 OTP Verification Attempt');
   console.log('Email:', email);
   console.log('Token Length:', tokenLength, tokenLength === 6 ? '✅' : '❌ Should be 6');
-  console.log('⏰ Verification attempt at:', new Date().toLocaleString());
-  console.log('⚠️ Note: Codes expire after 1 hour (3600 seconds)');
+  console.log('⏰ Verification attempt at:', verifyTime.toLocaleString());
+
+  // Check how much time has elapsed since code was sent
+  try {
+    const sentTimeStr = sessionStorage.getItem(`otp_sent_${email}`);
+    if (sentTimeStr) {
+      const sentTime = new Date(sentTimeStr);
+      const elapsedMs = verifyTime.getTime() - sentTime.getTime();
+      const elapsedSec = Math.floor(elapsedMs / 1000);
+      const elapsedMin = Math.floor(elapsedSec / 60);
+
+      console.log('⏱️  Code sent:', sentTime.toLocaleString());
+      console.log('⏱️  Time elapsed:', `${elapsedMin}m ${elapsedSec % 60}s (${elapsedSec} seconds total)`);
+      console.log('⏱️  Expected validity: 3600 seconds (1 hour)');
+
+      if (elapsedSec < 3600) {
+        console.log('✅ Code should still be valid (within 1 hour window)');
+      } else {
+        console.log('❌ Code should be expired (exceeded 1 hour window)');
+      }
+    } else {
+      console.log('⚠️ No send timestamp found - cannot calculate elapsed time');
+    }
+  } catch (e) {
+    console.warn('⚠️ Could not calculate elapsed time:', e);
+  }
+
+  console.log('⚠️ Note: Codes configured to expire after 3600 seconds (1 hour)');
+  console.groupEnd();
 };
 
 export const logOTPVerifySuccess = (email: string) => {
@@ -88,15 +132,52 @@ export const logOTPVerifySuccess = (email: string) => {
 };
 
 export const logOTPVerifyError = (email: string, error: Error) => {
+  const errorTime = new Date();
+
   console.group('❌ OTP Verification Failed');
   console.error('Email:', email);
   console.error('Error:', error.message);
-  console.error('⏰ Timestamp:', new Date().toLocaleString());
+  console.error('⏰ Error timestamp:', errorTime.toLocaleString());
+
+  // Calculate elapsed time
+  try {
+    const sentTimeStr = sessionStorage.getItem(`otp_sent_${email}`);
+    if (sentTimeStr) {
+      const sentTime = new Date(sentTimeStr);
+      const elapsedMs = errorTime.getTime() - sentTime.getTime();
+      const elapsedSec = Math.floor(elapsedMs / 1000);
+      const elapsedMin = Math.floor(elapsedSec / 60);
+
+      console.error('⏱️  Code sent:', sentTime.toLocaleString());
+      console.error('⏱️  Time elapsed:', `${elapsedMin}m ${elapsedSec % 60}s (${elapsedSec} seconds total)`);
+
+      if (elapsedSec < 60) {
+        console.error('🚨 CRITICAL: Code expired in less than 1 minute!');
+        console.error('🚨 This indicates a Supabase configuration issue!');
+        console.error('📋 Configured expiry: 3600 seconds (1 hour)');
+        console.error('📋 Actual behavior: Instant expiry');
+        console.error('');
+        console.error('🔧 TROUBLESHOOTING STEPS:');
+        console.error('  1. Verify Supabase Dashboard Auth settings show 3600 seconds');
+        console.error('  2. Wait 5-10 minutes for configuration changes to propagate');
+        console.error('  3. Clear browser cache and try again');
+        console.error('  4. Check Supabase Auth logs for any errors');
+        console.error('  5. Contact Supabase support if issue persists');
+      } else if (elapsedSec < 3600) {
+        console.error('⚠️ Code should still be valid based on 3600s configuration');
+        console.error('⚠️ But Supabase rejected it - possible server-side issue');
+      }
+    }
+  } catch (e) {
+    console.warn('⚠️ Could not calculate elapsed time:', e);
+  }
 
   if (error.message.includes('expired') || error.message.includes('token has expired')) {
-    console.error('⏰ Code has expired (exceeded 1 hour validity)');
+    console.error('');
+    console.error('⏰ Code has expired');
     console.error('💡 Solution: Click "Resend Code" to receive a new verification code');
   } else if (error.message.includes('invalid') || error.message.includes('otp')) {
+    console.error('');
     console.error('🔢 Invalid code entered');
     console.error('💡 Common issues:');
     console.error('  - Typo in the code (check all 6 digits)');
@@ -104,8 +185,16 @@ export const logOTPVerifyError = (email: string, error: Error) => {
     console.error('  - Email/token mismatch');
   }
 
-  console.error('Full Error:', error);
+  console.error('');
+  console.error('Full Error Object:', error);
   console.groupEnd();
+
+  // Clean up stored timestamp after error
+  try {
+    sessionStorage.removeItem(`otp_sent_${email}`);
+  } catch (e) {
+    // Ignore cleanup errors
+  }
 };
 
 export const checkOTPConfiguration = () => {
