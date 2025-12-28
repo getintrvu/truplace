@@ -79,15 +79,23 @@ export interface CompanyStats {
 }
 
 // Authentication helpers
-export const sendMagicLink = async (email: string, redirectTo?: string) => {
-  const defaultRedirect = `${import.meta.env.VITE_APP_URL}/submit-review`;
-  const redirectUrl = redirectTo || defaultRedirect;
-
+export const sendOTP = async (email: string) => {
   const { data, error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: redirectUrl,
+      shouldCreateUser: true,
     },
+  });
+
+  if (error) throw error;
+  return data;
+};
+
+export const verifyOTP = async (email: string, token: string) => {
+  const { data, error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: 'email',
   });
 
   if (error) throw error;

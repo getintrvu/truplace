@@ -1,19 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { X, Mail, CheckCircle, AlertCircle, Lock, Shield } from 'lucide-react';
-import { sendMagicLink } from '../lib/supabase';
+import { sendOTP, verifyOTP } from '../lib/supabase';
+import OTPInput from './OTPInput';
 
 interface EmailVerificationModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onVerified?: () => void;
   isAdminMode?: boolean;
 }
 
-const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({ isOpen, onClose, isAdminMode = false }) => {
+const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
+  isOpen,
+  onClose,
+  onVerified,
+  isAdminMode = false
+}) => {
   const [email, setEmail] = useState('');
   const [isValid, setIsValid] = useState<boolean | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [codeSent, setCodeSent] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpError, setOtpError] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   const isTestingMode = import.meta.env.VITE_DISABLE_AUTH_FOR_TESTING === 'true';
   const allowPersonalEmails = import.meta.env.VITE_ALLOW_PERSONAL_EMAILS === 'true';
@@ -31,21 +41,21 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({ isOpen,
     'mail.com', 'zoho.com', 'gmx.com'
   ];
 
-  // Email validation regex
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  // Reset modal state when opening
   useEffect(() => {
     if (isOpen) {
       setEmail('');
       setIsValid(null);
       setErrorMessage('');
       setIsLoading(false);
-      setIsSuccess(false);
+      setCodeSent(false);
+      setOtp('');
+      setOtpError(false);
+      setResendCooldown(0);
     }
   }, [isOpen]);
 
-  // Real-time email validation
   useEffect(() => {
     if (!email) {
       setIsValid(null);
@@ -53,15 +63,12 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({ isOpen,
       return;
     }
 
-    // Check email format
     if (!emailRegex.test(email)) {
       setIsValid(false);
       setErrorMessage('Please enter a valid email address');
       return;
     }
 
-    // TESTING: Skip work email validation if VITE_ALLOW_PERSONAL_EMAILS is enabled
-    // WARNING: This should be disabled in production!
     if (!allowPersonalEmails) {
       const domain = email.split('@')[1]?.toLowerCase();
       if (domain && blockedDomains.includes(domain)) {
@@ -71,29 +78,84 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({ isOpen,
       }
     }
 
-    // Email is valid
     setIsValid(true);
     setErrorMessage('');
-  }, [email]);
+  }, [email, allowPersonalEmails]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => {
+        setResendCooldown(resendCooldown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
+
+  const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!isValid || !email) return;
 
     setIsLoading(true);
+    setErrorMessage('');
 
     try {
-      const redirectUrl = isAdminMode
-        ? `${import.meta.env.VITE_APP_URL}/admin/company-requests`
-        : undefined;
-
-      await sendMagicLink(email, redirectUrl);
-
-      setIsSuccess(true);
-      setErrorMessage('');
+      await sendOTP(email);
+      setCodeSent(true);
+      setResendCooldown(600);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to send verification code');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    if (otp.length !== 6) return;
+
+    setIsLoading(true);
+    setOtpError(false);
+    setErrorMessage('');
+
+    try {
+      await verifyOTP(email, otp);
+
+      if (onVerified) {
+        onVerified();
+      }
+
+      if (isAdminMode) {
+        window.location.href = '/admin/company-requests';
+      } else {
+        window.location.reload();
+      }
+    } catch (error) {
+      setOtpError(true);
+      setErrorMessage(error instanceof Error ? error.message : 'Invalid verification code');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (codeSent && otp.length === 6) {
+      handleVerifyOTP();
+    }
+  }, [otp, codeSent]);
+
+  const handleResendCode = async () => {
+    if (resendCooldown > 0) return;
+
+    setIsLoading(true);
+    setErrorMessage('');
+    setOtp('');
+    setOtpError(false);
+
+    try {
+      await sendOTP(email);
+      setResendCooldown(600);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to resend code');
     } finally {
       setIsLoading(false);
     }
@@ -111,15 +173,20 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({ isOpen,
     }
   };
 
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   if (!isOpen || isTestingMode) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm animate-fade-in"
       onClick={handleBackdropClick}
     >
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto animate-slide-up">
-        {/* Header */}
         <div className="relative p-6 pb-4">
           <button
             onClick={handleClose}
@@ -130,7 +197,6 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({ isOpen,
             <X className="w-5 h-5" />
           </button>
 
-          {/* Icon */}
           <div className="flex justify-center mb-4">
             <div className="relative">
               <div className="w-16 h-16 bg-gradient-to-r from-blue-100 to-green-100 rounded-full flex items-center justify-center">
@@ -141,28 +207,28 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({ isOpen,
                 )}
               </div>
               <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-4 h-4 text-white" />
+                <Lock className="w-4 h-4 text-white" />
               </div>
             </div>
           </div>
 
-          {/* Title and Description */}
           <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">
-            {isAdminMode ? 'Admin Login' : 'Verify Your Email'}
+            {codeSent ? 'Enter Verification Code' : (isAdminMode ? 'Admin Login' : 'Verify Your Email')}
           </h2>
           <p className="text-gray-600 text-center leading-relaxed">
-            {isAdminMode
-              ? "Enter your admin email to receive a secure magic link for instant access to the admin dashboard."
-              : "To keep reviews authentic and anonymous, please verify your email. We'll send you a secure magic link for instant access."
+            {codeSent
+              ? `We sent a 6-digit code to ${email}`
+              : (isAdminMode
+                ? "Enter your admin email to receive a secure verification code for instant access."
+                : "To keep reviews authentic and anonymous, please verify your email with a secure code."
+              )
             }
           </p>
         </div>
 
-        {/* Form */}
         <div className="px-6 pb-6">
-          {!isSuccess ? (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Email Input */}
+          {!codeSent ? (
+            <form onSubmit={handleSendCode} className="space-y-4">
               <div>
                 <div className="relative">
                   <input
@@ -180,8 +246,7 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({ isOpen,
                     }`}
                     aria-describedby={errorMessage ? 'email-error' : undefined}
                   />
-                  
-                  {/* Validation Icon */}
+
                   {isValid !== null && (
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                       {isValid ? (
@@ -193,7 +258,6 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({ isOpen,
                   )}
                 </div>
 
-                {/* Error Message */}
                 {errorMessage && (
                   <p id="email-error" className="mt-2 text-sm text-red-600 flex items-center">
                     <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
@@ -202,7 +266,6 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({ isOpen,
                 )}
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={!isValid || isLoading}
@@ -214,48 +277,68 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({ isOpen,
                     <span>Sending...</span>
                   </>
                 ) : (
-                  <span>Send Magic Link</span>
+                  <span>Send Verification Code</span>
                 )}
               </button>
             </form>
           ) : (
-            /* Success State */
-            <div className="text-center py-4">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-8 h-8 text-green-600" />
+            <div className="space-y-4">
+              <div>
+                <OTPInput
+                  value={otp}
+                  onChange={setOtp}
+                  disabled={isLoading}
+                  error={otpError}
+                />
+
+                {errorMessage && (
+                  <p className="mt-3 text-sm text-red-600 flex items-center justify-center">
+                    <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
+                    {errorMessage}
+                  </p>
+                )}
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Magic Link Sent!
-              </h3>
-              <p className="text-gray-600">
-                {isAdminMode
-                  ? "Check your email for the admin login link. It will expire in 15 minutes."
-                  : "Check your email to continue. The link will expire in 15 minutes."
-                }
-              </p>
+
+              <div className="text-center">
+                <button
+                  onClick={handleResendCode}
+                  disabled={isLoading || resendCooldown > 0}
+                  className="text-sm text-blue-600 hover:text-blue-700 transition-colors duration-200 disabled:text-gray-400 disabled:cursor-not-allowed"
+                >
+                  {resendCooldown > 0
+                    ? `Resend available in ${formatTime(resendCooldown)}`
+                    : 'Resend Code'
+                  }
+                </button>
+              </div>
+
+              <button
+                onClick={() => setCodeSent(false)}
+                disabled={isLoading}
+                className="w-full border border-gray-300 text-gray-700 py-3 px-6 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Change Email
+              </button>
             </div>
           )}
 
-          {/* Security Assurance */}
-          {!isSuccess && (
+          {!codeSent && (
             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
               <div className="flex items-start space-x-3">
                 <Lock className="w-5 h-5 text-gray-600 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-sm text-gray-700 leading-relaxed">
-                    <span className="font-medium">🔒 Secure & Password-Free</span> - 
-                    Click the magic link in your email to sign in instantly. 
-                    No passwords to remember!
+                    <span className="font-medium">Secure & Password-Free</span> -
+                    Enter the 6-digit code sent to your email to verify and sign in instantly.
                   </p>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Support Link */}
           <div className="mt-6 text-center">
-            <a 
-              href="/support" 
+            <a
+              href="/support"
               className="text-sm text-blue-600 hover:text-blue-700 transition-colors duration-200"
             >
               Need help? Contact Support
