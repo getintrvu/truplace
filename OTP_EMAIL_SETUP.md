@@ -2,6 +2,17 @@
 
 This guide explains how to configure the Supabase email template for OTP (One-Time Password) authentication.
 
+## IMPORTANT: Magic Link vs OTP Code
+
+If users are receiving **magic links** instead of **6-digit OTP codes**, you need to enable Email OTP in Supabase:
+
+1. Go to **Authentication** → **Providers** → **Email**
+2. Enable **"Email OTP"** authentication method
+3. Optionally disable **"Magic Link"** if you only want OTP codes
+4. Save changes
+
+See `OTP_CONFIGURATION_FIX.md` for detailed troubleshooting.
+
 ## Overview
 
 The application uses OTP-based authentication instead of magic links. Users receive a 6-digit verification code via email that they enter in the application to authenticate.
