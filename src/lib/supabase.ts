@@ -161,14 +161,14 @@ export const verifyOTP = async (email: string, token: string) => {
       console.log('=== VERIFYOTP CALL START ===');
       console.log('Parameters being sent:');
       console.log('  email:', email);
-      console.log('  token (masked):', token.substring(0, 2) + '****' + token.substring(4, 6));
-      console.log('  token (full length):', token.length);
+      console.log('  token_hash (masked):', token.substring(0, 2) + '****' + token.substring(4, 6));
+      console.log('  token_hash (full length):', token.length);
       console.log('  type:', 'magiclink');
 
       const startTime = Date.now();
       const response = await supabase.auth.verifyOtp({
         email,
-        token,
+        token_hash: token,
         type: 'magiclink',
       });
       const endTime = Date.now();
@@ -220,7 +220,7 @@ export const verifyOTP = async (email: string, token: string) => {
 
   const { data, error } = await supabase.auth.verifyOtp({
     email,
-    token,
+    token_hash: token,
     type: 'magiclink',
   });
 
