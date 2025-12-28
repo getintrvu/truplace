@@ -56,14 +56,14 @@ export const logOTPSendAttempt = (email: string) => {
 
 export const logOTPSendSuccess = (email: string, responseData?: any) => {
   const sentTime = new Date();
-  const expiryTime = new Date(sentTime.getTime() + 3600000);
+  const expiryTime = new Date(sentTime.getTime() + 60000);
 
   console.group('✅ OTP Send Success');
   console.log('Email:', email);
   console.log('📬 Check your email inbox for the code');
   console.log('⏰ Code sent at:', sentTime.toLocaleString());
   console.log('⏰ Expected expiry at:', expiryTime.toLocaleString());
-  console.log('⏱️  Expected validity: 1 hour (3600 seconds)');
+  console.log('⏱️  Expected validity: 1 minute (60 seconds)');
 
   if (responseData) {
     console.log('📋 Supabase Response:', responseData);
@@ -108,12 +108,12 @@ export const logOTPVerifyAttempt = (email: string, tokenLength: number) => {
 
       console.log('⏱️  Code sent:', sentTime.toLocaleString());
       console.log('⏱️  Time elapsed:', `${elapsedMin}m ${elapsedSec % 60}s (${elapsedSec} seconds total)`);
-      console.log('⏱️  Expected validity: 3600 seconds (1 hour)');
+      console.log('⏱️  Expected validity: 60 seconds (1 minute)');
 
-      if (elapsedSec < 3600) {
-        console.log('✅ Code should still be valid (within 1 hour window)');
+      if (elapsedSec < 60) {
+        console.log('✅ Code should still be valid (within 1 minute window)');
       } else {
-        console.log('❌ Code should be expired (exceeded 1 hour window)');
+        console.log('❌ Code should be expired (exceeded 1 minute window)');
       }
     } else {
       console.log('⚠️ No send timestamp found - cannot calculate elapsed time');
@@ -122,7 +122,7 @@ export const logOTPVerifyAttempt = (email: string, tokenLength: number) => {
     console.warn('⚠️ Could not calculate elapsed time:', e);
   }
 
-  console.log('⚠️ Note: Codes configured to expire after 3600 seconds (1 hour)');
+  console.log('⚠️ Note: Codes configured to expire after 60 seconds (1 minute)');
   console.groupEnd();
 };
 
@@ -151,20 +151,20 @@ export const logOTPVerifyError = (email: string, error: Error) => {
       console.error('⏱️  Code sent:', sentTime.toLocaleString());
       console.error('⏱️  Time elapsed:', `${elapsedMin}m ${elapsedSec % 60}s (${elapsedSec} seconds total)`);
 
-      if (elapsedSec < 60) {
-        console.error('🚨 CRITICAL: Code expired in less than 1 minute!');
+      if (elapsedSec < 10) {
+        console.error('🚨 CRITICAL: Code expired in less than 10 seconds!');
         console.error('🚨 This indicates a Supabase configuration issue!');
-        console.error('📋 Configured expiry: 3600 seconds (1 hour)');
+        console.error('📋 Configured expiry: 60 seconds (1 minute)');
         console.error('📋 Actual behavior: Instant expiry');
         console.error('');
         console.error('🔧 TROUBLESHOOTING STEPS:');
-        console.error('  1. Verify Supabase Dashboard Auth settings show 3600 seconds');
+        console.error('  1. Verify Supabase Dashboard Auth settings');
         console.error('  2. Wait 5-10 minutes for configuration changes to propagate');
         console.error('  3. Clear browser cache and try again');
         console.error('  4. Check Supabase Auth logs for any errors');
         console.error('  5. Contact Supabase support if issue persists');
-      } else if (elapsedSec < 3600) {
-        console.error('⚠️ Code should still be valid based on 3600s configuration');
+      } else if (elapsedSec < 60) {
+        console.error('⚠️ Code should still be valid based on 60s configuration');
         console.error('⚠️ But Supabase rejected it - possible server-side issue');
       }
     }

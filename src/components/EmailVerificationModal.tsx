@@ -115,8 +115,8 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
     try {
       await sendOTP(email);
       setCodeSent(true);
-      setResendCooldown(3600);
-      setCodeExpiry(3600);
+      setResendCooldown(60);
+      setCodeExpiry(60);
       setCodeSentTime(new Date());
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Failed to send verification code');
@@ -183,8 +183,8 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
 
     try {
       await sendOTP(email);
-      setResendCooldown(3600);
-      setCodeExpiry(3600);
+      setResendCooldown(60);
+      setCodeExpiry(60);
       setCodeSentTime(new Date());
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Failed to resend code');
@@ -360,7 +360,7 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
                 </div>
                 <div className="text-center text-xs text-gray-500">
                   {codeSentTime && (
-                    <p>Code sent at {codeSentTime.toLocaleTimeString()} • Valid for 1 hour</p>
+                    <p>Code sent at {codeSentTime.toLocaleTimeString()} • Valid for 1 minute</p>
                   )}
                 </div>
               </div>
