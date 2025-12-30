@@ -1,55 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Menu, X, Search, Edit, User, LogOut, ChevronDown, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentUser, supabase, isAdmin } from '../lib/supabase';
+import { useUser, useClerk } from '@clerk/clerk-react';
+import { useAdmin } from '../contexts/AdminContext';
 import EmailVerificationModal from './EmailVerificationModal';
 
 const Header = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [userIsAdmin, setUserIsAdmin] = useState(false);
 
-  useEffect(() => {
-    checkAuthStatus();
-
-    // Only set up auth listener if not in testing mode
-    if (import.meta.env.VITE_DISABLE_AUTH_FOR_TESTING !== 'true') {
-      const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-        if (session?.user) {
-          setUser(session.user);
-        } else {
-          setUser(null);
-        }
-      });
-
-      return () => {
-        authListener.subscription.unsubscribe();
-      };
-    }
-  }, []);
-
-  const checkAuthStatus = async () => {
-    try {
-      const currentUser = await getCurrentUser();
-      setUser(currentUser);
-
-      if (currentUser) {
-        const adminStatus = await isAdmin();
-        setUserIsAdmin(adminStatus);
-      } else {
-        setUserIsAdmin(false);
-      }
-    } catch (error) {
-      setUser(null);
-      setUserIsAdmin(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
+  const { isAdmin: userIsAdmin } = useAdmin();
 
   const handleWriteReviewClick = () => {
     if (user) {
@@ -61,16 +25,7 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
-      // In testing mode, just clear the user state
-      if (import.meta.env.VITE_DISABLE_AUTH_FOR_TESTING === 'true') {
-        setUser(null);
-        setIsUserMenuOpen(false);
-        navigate('/');
-        return;
-      }
-
-      await supabase.auth.signOut();
-      setUser(null);
+      await signOut();
       setIsUserMenuOpen(false);
       navigate('/');
     } catch (error) {
@@ -79,8 +34,7 @@ const Header = () => {
   };
 
   const getUserEmail = () => {
-    if (!user?.email) return '';
-    const email = user.email;
+    const email = user?.primaryEmailAddress?.emailAddress || '';
     if (email.length > 25) {
       return email.substring(0, 22) + '...';
     }
@@ -89,15 +43,9 @@ const Header = () => {
 
   return (
     <>
-      {import.meta.env.VITE_DISABLE_AUTH_FOR_TESTING === 'true' && (
-        <div className="bg-yellow-400 text-gray-900 py-2 px-4 text-center text-sm font-medium">
-          ⚠️ Testing Mode Active - Email Verification Disabled
-        </div>
-      )}
       <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
           <div className="flex items-center">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-green-500 rounded-lg flex items-center justify-center">
@@ -107,7 +55,6 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <a href="/companies" className="text-gray-600 hover:text-gray-900 transition-colors duration-200">
               Companies
@@ -129,7 +76,6 @@ const Header = () => {
             )}
           </nav>
 
-          {/* CTA Button & User Menu */}
           <div className="hidden md:flex items-center space-x-4">
             <button
               onClick={handleWriteReviewClick}
@@ -139,7 +85,7 @@ const Header = () => {
               <span>Write a Review</span>
             </button>
 
-            {user && (
+            {isLoaded && user && (
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
@@ -194,7 +140,6 @@ const Header = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -204,10 +149,9 @@ const Header = () => {
           </button>
         </div>
 
-        {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden border-t border-gray-200 py-4">
-            {user && (
+            {isLoaded && user && (
               <div className="px-4 py-3 mb-4 bg-gray-50 rounded-lg">
                 <p className="text-xs text-gray-500">Signed in as</p>
                 <p className="text-sm font-medium text-gray-900 truncate">{getUserEmail()}</p>
@@ -239,7 +183,7 @@ const Header = () => {
                 <Edit className="w-4 h-4" />
                 <span>Write a Review</span>
               </button>
-              {user && (
+              {isLoaded && user && (
                 <button
                   onClick={handleLogout}
                   className="border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-50 transition-all duration-300 flex items-center justify-center space-x-2 w-full"

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { isAdmin, supabase } from '../lib/supabase';
+import { useUser } from '@clerk/clerk-react';
+import { useAdmin } from '../contexts/AdminContext';
 import { Shield, AlertTriangle } from 'lucide-react';
 
 interface AdminRouteProps {
@@ -9,57 +10,23 @@ interface AdminRouteProps {
 
 const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
+  const { user, isLoaded: userLoaded } = useUser();
+  const { isAdmin, isLoading: adminLoading } = useAdmin();
   const [error, setError] = useState<string | null>(null);
 
+  const loading = !userLoaded || adminLoading;
+
   useEffect(() => {
-    checkAdminAccess();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        checkAdminAccess();
-      } else if (!loading) {
+    if (!loading) {
+      if (!user) {
         setError('You must be logged in to access this page');
-        setAuthorized(false);
         setTimeout(() => navigate('/'), 2000);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const checkAdminAccess = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (!session?.user) {
-        setError('You must be logged in to access this page');
-        setLoading(false);
-        setTimeout(() => navigate('/'), 2000);
-        return;
-      }
-
-      const isAdminUser = await isAdmin();
-
-      if (!isAdminUser) {
+      } else if (!isAdmin) {
         setError('You do not have admin privileges to access this page');
-        setLoading(false);
         setTimeout(() => navigate('/'), 2000);
-        return;
       }
-
-      setAuthorized(true);
-      setLoading(false);
-    } catch (err) {
-      console.error('Admin access check failed:', err);
-      setError('Failed to verify admin access');
-      setLoading(false);
-      setTimeout(() => navigate('/'), 2000);
     }
-  };
+  }, [loading, user, isAdmin, navigate]);
 
   if (loading) {
     return (
@@ -92,7 +59,7 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
     );
   }
 
-  if (!authorized) {
+  if (!user || !isAdmin) {
     return null;
   }
 
