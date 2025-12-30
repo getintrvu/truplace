@@ -4,6 +4,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import ToastContainer from './components/ToastContainer';
 import AdminRoute from './components/AdminRoute';
+import { AdminProvider } from './contexts/AdminContext';
 import { useToast } from './hooks/useToast';
 
 const LandingPage = lazy(() => import('./pages/LandingPage'));
@@ -24,44 +25,46 @@ function App() {
 
   return (
     <ToastContext.Provider value={toast}>
-      <Router>
-        <div className="min-h-screen flex flex-col">
-          <Header />
-          <div className="flex-grow">
-            <Suspense fallback={
-              <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="flex flex-col items-center space-y-4">
-                  <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                  <p className="text-gray-600">Loading...</p>
+      <AdminProvider>
+        <Router>
+          <div className="min-h-screen flex flex-col">
+            <Header />
+            <div className="flex-grow">
+              <Suspense fallback={
+                <div className="flex items-center justify-center min-h-[60vh]">
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-gray-600">Loading...</p>
+                  </div>
                 </div>
-              </div>
-            }>
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/submit-review" element={<SubmitReviewPage />} />
-                <Route path="/request-company" element={<RequestCompanyPage />} />
-                <Route path="/company-requested" element={<CompanyRequestedPage />} />
-                <Route path="/admin/company-requests" element={
-                  <AdminRoute>
-                    <AdminCompanyRequestsPage />
-                  </AdminRoute>
-                } />
-                <Route path="/admin/companies" element={
-                  <AdminRoute>
-                    <AdminCompaniesPage />
-                  </AdminRoute>
-                } />
-                <Route path="/notification/:token" element={<NotificationPage />} />
-                <Route path="/company/:companyId" element={<CompanyProfilePage />} />
-                <Route path="/companies" element={<CompaniesPage />} />
-                <Route path="/about" element={<AboutPage />} />
-              </Routes>
-            </Suspense>
+              }>
+                <Routes>
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/submit-review" element={<SubmitReviewPage />} />
+                  <Route path="/request-company" element={<RequestCompanyPage />} />
+                  <Route path="/company-requested" element={<CompanyRequestedPage />} />
+                  <Route path="/admin/company-requests" element={
+                    <AdminRoute>
+                      <AdminCompanyRequestsPage />
+                    </AdminRoute>
+                  } />
+                  <Route path="/admin/companies" element={
+                    <AdminRoute>
+                      <AdminCompaniesPage />
+                    </AdminRoute>
+                  } />
+                  <Route path="/notification/:token" element={<NotificationPage />} />
+                  <Route path="/company/:companyId" element={<CompanyProfilePage />} />
+                  <Route path="/companies" element={<CompaniesPage />} />
+                  <Route path="/about" element={<AboutPage />} />
+                </Routes>
+              </Suspense>
+            </div>
+            <Footer />
+            <ToastContainer toasts={toast.toasts} onClose={toast.removeToast} />
           </div>
-          <Footer />
-          <ToastContainer toasts={toast.toasts} onClose={toast.removeToast} />
-        </div>
-      </Router>
+        </Router>
+      </AdminProvider>
     </ToastContext.Provider>
   );
 }
