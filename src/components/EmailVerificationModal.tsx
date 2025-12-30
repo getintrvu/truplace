@@ -140,10 +140,10 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
   const handleVerifyOTP = async () => {
     const trimmedOtp = otp.trim();
 
-    if (trimmedOtp.length !== 6) return;
-    if (!/^\d{6}$/.test(trimmedOtp)) {
+    if (trimmedOtp.length !== 8) return;
+    if (!/^\d{8}$/.test(trimmedOtp)) {
       setOtpError(true);
-      setErrorMessage('Code must be 6 digits');
+      setErrorMessage('Code must be 8 digits');
       return;
     }
 
@@ -196,7 +196,7 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
   };
 
   useEffect(() => {
-    if (codeSent && otp.length === 6) {
+    if (codeSent && otp.length === 8) {
       handleVerifyOTP();
     }
   }, [otp, codeSent]);
@@ -289,7 +289,7 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
           </h2>
           <p className="text-gray-600 text-center leading-relaxed">
             {codeSent
-              ? `We sent a 6-digit code to ${email}`
+              ? `We sent an 8-digit code to ${email}`
               : (isAdminMode
                 ? "Enter your admin email to receive a secure verification code for instant access."
                 : "To keep reviews authentic and anonymous, please verify your email with a secure code."
@@ -422,7 +422,7 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
                 <div>
                   <p className="text-sm text-gray-700 leading-relaxed">
                     <span className="font-medium">Secure & Password-Free</span> -
-                    Enter the 6-digit code sent to your email to verify and sign in instantly.
+                    Enter the 8-digit code sent to your email to verify and sign in instantly.
                   </p>
                 </div>
               </div>

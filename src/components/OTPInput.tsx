@@ -9,7 +9,7 @@ interface OTPInputProps {
 }
 
 const OTPInput: React.FC<OTPInputProps> = ({
-  length = 6,
+  length = 8,
   value,
   onChange,
   disabled = false,
