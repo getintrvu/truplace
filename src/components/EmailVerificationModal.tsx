@@ -152,6 +152,16 @@ const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
     setErrorMessage('');
 
     try {
+      console.log('=== OTP CODE BEFORE SENDING TO SUPABASE ===');
+      console.log('Raw otp from state:', otp);
+      console.log('Raw otp length:', otp.length);
+      console.log('Trimmed otp:', trimmedOtp);
+      console.log('Trimmed otp length:', trimmedOtp.length);
+      console.log('Trimmed otp type:', typeof trimmedOtp);
+      console.log('Is string?', typeof trimmedOtp === 'string');
+      console.log('Passing to verifyOTP as:', trimmedOtp);
+      console.log('=== END OTP CODE INFO ===');
+
       await verifyOTP(email, trimmedOtp);
 
       if (onVerified) {
