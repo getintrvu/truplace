@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Twitter, Facebook, Linkedin, Instagram } from 'lucide-react';
-import EmailVerificationModal from './EmailVerificationModal';
+import ClerkSignInModal from './ClerkSignInModal';
 
 const Footer = () => {
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
@@ -133,10 +133,10 @@ const Footer = () => {
         </div>
       </div>
 
-      <EmailVerificationModal
+      <ClerkSignInModal
         isOpen={isAdminModalOpen}
         onClose={() => setIsAdminModalOpen(false)}
-        isAdminMode={true}
+        redirectUrl="/admin/company-requests"
       />
     </footer>
   );

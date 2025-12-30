@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, AlertCircle, ArrowLeft, Loader2 } from 'lucide-react';
 import { getNotificationByToken, markNotificationAsRead, getCurrentUser } from '../lib/supabase';
-import EmailVerificationModal from '../components/EmailVerificationModal';
+import ClerkSignInModal from '../components/ClerkSignInModal';
 
 interface NotificationData {
   company_id?: string;
@@ -309,10 +309,10 @@ const NotificationPage = () => {
       </div>
 
       {showEmailModal && (
-        <EmailVerificationModal
+        <ClerkSignInModal
           isOpen={showEmailModal}
           onClose={() => setShowEmailModal(false)}
-          onVerified={handleEmailVerified}
+          redirectUrl="/submit-review"
         />
       )}
     </div>

@@ -9,9 +9,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
+    autoRefreshToken: false,
+    persistSession: false,
+    detectSessionInUrl: false
   }
 });
 
@@ -20,13 +20,7 @@ if (import.meta.env.DEV) {
   console.log('=== SUPABASE CLIENT CONFIGURATION ===');
   console.log('URL:', import.meta.env.VITE_SUPABASE_URL);
   console.log('Anon Key Present:', !!import.meta.env.VITE_SUPABASE_ANON_KEY);
-  console.log('Anon Key (first 20 chars):', import.meta.env.VITE_SUPABASE_ANON_KEY?.substring(0, 20) + '...');
-  console.log('Auth Settings:', {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
-  });
-  console.log('OTP Type:', 'magiclink');
+  console.log('Auth Disabled:', 'Using Clerk for authentication');
   console.log('=====================================');
 }
 
@@ -93,143 +87,6 @@ export interface CompanyStats {
   updated_at: string;
 }
 
-// Authentication helpers
-export const sendOTP = async (email: string) => {
-  if (import.meta.env.DEV) {
-    const { logOTPSendAttempt, logOTPSendSuccess, logOTPSendError } = await import('./otpDebug');
-    logOTPSendAttempt(email);
-
-    try {
-      console.log('🔧 Sending OTP (clean, no options):', {
-        email,
-      });
-
-      const response = await supabase.auth.signInWithOtp({
-        email
-      });
-
-      const { data, error } = response;
-
-      console.log('=== DETAILED SIGNINWITHOTP RESPONSE START ===');
-      console.log('Timestamp:', new Date().toISOString());
-      console.log('Response Object Keys:', Object.keys(response));
-      console.log('Data Object:', JSON.stringify(data, null, 2));
-      console.log('Error Object:', JSON.stringify(error, null, 2));
-      console.log('Full Response (stringified):', JSON.stringify(response, null, 2));
-      if (data) {
-        console.log('Data Keys:', Object.keys(data));
-        console.log('Data.user:', data.user);
-        console.log('Data.session:', data.session);
-      }
-      if (error) {
-        console.log('Error Keys:', Object.keys(error));
-        console.log('Error.message:', error.message);
-        console.log('Error.status:', (error as any).status);
-        console.log('Error.code:', (error as any).code);
-      }
-      console.log('=== DETAILED SIGNINWITHOTP RESPONSE END ===');
-
-      if (error) {
-        logOTPSendError(email, error);
-        throw error;
-      }
-
-      logOTPSendSuccess(email, data);
-      return data;
-    } catch (error) {
-      if (error instanceof Error) {
-        logOTPSendError(email, error);
-      }
-      throw error;
-    }
-  }
-
-  const { data, error } = await supabase.auth.signInWithOtp({
-    email
-  });
-
-  if (error) throw error;
-  return data;
-};
-
-export const verifyOTP = async (email: string, token: string) => {
-  if (import.meta.env.DEV) {
-    const { logOTPVerifyAttempt, logOTPVerifySuccess, logOTPVerifyError } = await import('./otpDebug');
-    logOTPVerifyAttempt(email, token.length);
-
-    try {
-      console.log('=== VERIFYOTP CALL START ===');
-      console.log('Parameters being sent:');
-      console.log('  token_hash (masked):', token.substring(0, 2) + '****' + token.substring(4, 6));
-      console.log('  token_hash (full length):', token.length);
-      console.log('  type:', 'email');
-      console.log('  NOTE: email parameter NOT included (Supabase identifies user from token)');
-
-      const startTime = Date.now();
-      const response = await supabase.auth.verifyOtp({
-        token_hash: token,
-        type: 'email',
-      });
-      const endTime = Date.now();
-
-      const { data, error } = response;
-
-      console.log('Response received in:', endTime - startTime, 'ms');
-      console.log('Response Keys:', Object.keys(response));
-      console.log('Data Object:', JSON.stringify(data, null, 2));
-      console.log('Error Object:', JSON.stringify(error, null, 2));
-      console.log('Full Response (stringified):', JSON.stringify(response, null, 2));
-      if (data) {
-        console.log('Data Keys:', Object.keys(data));
-        console.log('Data.user:', data.user);
-        console.log('Data.session:', data.session);
-      }
-      if (error) {
-        console.log('Error Keys:', Object.keys(error));
-        console.log('Error.message:', error.message);
-        console.log('Error.status:', (error as any).status);
-        console.log('Error.code:', (error as any).code);
-        console.log('Error.details:', (error as any).details);
-        console.log('Error.hint:', (error as any).hint);
-      }
-      console.log('=== VERIFYOTP CALL END ===');
-
-      if (error) {
-        logOTPVerifyError(email, error);
-        throw error;
-      }
-
-      logOTPVerifySuccess(email);
-
-      // Clean up stored timestamp on success
-      try {
-        sessionStorage.removeItem(`otp_sent_${email}`);
-      } catch (e) {
-        // Ignore cleanup errors
-      }
-
-      return data;
-    } catch (error) {
-      if (error instanceof Error) {
-        logOTPVerifyError(email, error);
-      }
-      throw error;
-    }
-  }
-
-  const { data, error } = await supabase.auth.verifyOtp({
-    token_hash: token,
-    type: 'email',
-  });
-
-  if (error) throw error;
-  return data;
-};
-
-export const signOut = async () => {
-  const { error } = await supabase.auth.signOut();
-  if (error) throw error;
-};
 
 export const getCurrentUser = async () => {
   if (import.meta.env.VITE_DISABLE_AUTH_FOR_TESTING === 'true') {
@@ -244,19 +101,38 @@ export const getCurrentUser = async () => {
     };
   }
 
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error) {
-    console.error('Error fetching user:', error);
+  if (typeof window === 'undefined') {
     return null;
   }
-  return user;
+
+  const clerkLoaded = (window as any).Clerk;
+  if (!clerkLoaded) {
+    console.warn('Clerk not loaded yet');
+    return null;
+  }
+
+  try {
+    const clerk = (window as any).Clerk;
+    const user = clerk.user;
+
+    if (!user) {
+      return null;
+    }
+
+    return {
+      id: user.id,
+      email: user.primaryEmailAddress?.emailAddress || '',
+      app_metadata: {},
+      user_metadata: {},
+      aud: 'authenticated',
+      created_at: new Date(user.createdAt).toISOString(),
+    };
+  } catch (error) {
+    console.error('Error getting Clerk user:', error);
+    return null;
+  }
 };
 
-export const handleAuthCallback = async () => {
-  const { data, error } = await supabase.auth.getSession();
-  if (error) throw error;
-  return data.session;
-};
 
 // Company data helpers
 export const getCompanies = async () => {

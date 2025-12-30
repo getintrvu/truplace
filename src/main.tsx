@@ -4,12 +4,6 @@ import { ClerkProvider } from '@clerk/clerk-react';
 import App from './App.tsx';
 import './index.css';
 
-if (import.meta.env.DEV) {
-  import('./lib/otpDebug').then(({ logOTPStatus }) => {
-    logOTPStatus();
-  });
-}
-
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 if (!clerkPubKey) {

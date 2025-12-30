@@ -20,7 +20,7 @@ import ReviewCard from '../components/ReviewCard';
 import MetricCard from '../components/MetricCard';
 import ComparisonTable from '../components/ComparisonTable';
 import FilterBar from '../components/FilterBar';
-import EmailVerificationModal from '../components/EmailVerificationModal';
+import ClerkSignInModal from '../components/ClerkSignInModal';
 import { CompanyStats, Review } from '../lib/supabase';
 
 const CompanyProfilePage = () => {
@@ -520,9 +520,10 @@ const CompanyProfilePage = () => {
         </div>
       </div>
 
-      <EmailVerificationModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <ClerkSignInModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        redirectUrl="/submit-review"
       />
     </>
   );

@@ -3,7 +3,7 @@ import { Menu, X, Search, Edit, User, LogOut, ChevronDown, Shield } from 'lucide
 import { useNavigate } from 'react-router-dom';
 import { useUser, useClerk } from '@clerk/clerk-react';
 import { useAdmin } from '../contexts/AdminContext';
-import EmailVerificationModal from './EmailVerificationModal';
+import ClerkSignInModal from './ClerkSignInModal';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -198,10 +198,10 @@ const Header = () => {
       </div>
       </header>
 
-      <EmailVerificationModal
+      <ClerkSignInModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        isAdminMode={false}
+        redirectUrl="/submit-review"
       />
     </>
   );

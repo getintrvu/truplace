@@ -1,6 +1,6 @@
 import React from 'react';
 import { User, ShieldCheck, Edit } from 'lucide-react';
-import EmailVerificationModal from './EmailVerificationModal';
+import ClerkSignInModal from './ClerkSignInModal';
 
 const HowItWorks = () => {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
@@ -90,9 +90,10 @@ const HowItWorks = () => {
         </div>
       </section>
 
-      <EmailVerificationModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <ClerkSignInModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        redirectUrl="/submit-review"
       />
     </>
   );
