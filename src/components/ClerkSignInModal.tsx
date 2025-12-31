@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { SignIn, SignUp } from '@clerk/clerk-react';
 
@@ -16,6 +16,12 @@ const ClerkSignInModal: React.FC<ClerkSignInModalProps> = ({
   initialMode = 'sign-in'
 }) => {
   const [mode, setMode] = useState<'sign-in' | 'sign-up'>(initialMode);
+
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+    }
+  }, [isOpen, initialMode]);
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -42,7 +48,6 @@ const ClerkSignInModal: React.FC<ClerkSignInModalProps> = ({
         <div className="p-6">
           {mode === 'sign-in' ? (
             <SignIn
-              routing="virtual"
               afterSignInUrl={redirectUrl}
               appearance={{
                 elements: {
@@ -58,7 +63,6 @@ const ClerkSignInModal: React.FC<ClerkSignInModalProps> = ({
             />
           ) : (
             <SignUp
-              routing="virtual"
               afterSignUpUrl={redirectUrl}
               appearance={{
                 elements: {
